@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>回忆地图</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --bg:#12100e; --bg2:#1b1815; --bg3:#241f1b; --line:#3a322c;
+  --ink:#f2ece4; --ink2:#b8ab9c; --ink3:#7d7267;
+  --accent:#e0a04a; --accent2:#c96f4a; --ok:#5aa87a; --warn:#d4763f; --err:#c9524a;
+  --r:14px; --r2:10px; --sh:0 10px 30px rgba(0,0,0,.45);
+  --sheet-h:0px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+  font:14px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+#map{position:absolute;inset:0;background:#0b0a09}
+.leaflet-container{background:#0b0a09;font:inherit}
+.leaflet-control-attribution{background:rgba(18,16,14,.7)!important;color:var(--ink3)!important;font-size:10px!important}
+.leaflet-control-attribution a{color:var(--ink2)!important}
+.leaflet-bar{border:0!important;box-shadow:var(--sh)!important}
+.leaflet-bar a{background:var(--bg2)!important;color:var(--ink)!important;border-color:var(--line)!important}
+.leaflet-bar a:hover{background:var(--bg3)!important}
+
+/* ---------- generic chrome ---------- */
+.panel{background:rgba(27,24,21,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.hd{position:absolute;top:calc(12px + env(safe-area-inset-top));left:12px;z-index:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 24px)}
+.brand{display:flex;align-items:center;gap:9px;padding:9px 13px}
+.brand b{font-size:15px;font-weight:600;letter-spacing:.5px}
+.brand .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:0 0 auto}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;
+  background:rgba(27,24,21,.94);border:1px solid var(--line);color:var(--ink2);font-size:12px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);white-space:nowrap;box-shadow:var(--sh)}
+.chip:hover{color:var(--ink);border-color:#4d423a}
+.chip.on{color:#1a1512;background:var(--accent);border-color:var(--accent);font-weight:600}
+.chip .i{font-size:13px;line-height:1}
+.sync{cursor:pointer}
+.sync .led{width:7px;height:7px;border-radius:50%;background:var(--ink3)}
+.sync.ok .led{background:var(--ok)}
+.sync.off .led{background:var(--err)}
+.sync.busy .led{background:var(--accent);animation:bl 1s infinite}
+@keyframes bl{50%{opacity:.25}}
+
+.tr{position:absolute;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:600;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+
+/* ---------- layer switcher ---------- */
+.lyr{width:206px;padding:8px;display:none}
+.lyr.open{display:block}
+.lyr .grp{font-size:10px;letter-spacing:1px;color:var(--ink3);padding:7px 8px 5px}
+.lyr button{display:flex;width:100%;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--r2);
+  color:var(--ink2);font-size:13px;text-align:left}
+.lyr button:hover{background:var(--bg3);color:var(--ink)}
+.lyr button.on{background:var(--bg3);color:var(--ink);font-weight:600}
+.lyr button .sw{width:22px;height:22px;border-radius:6px;flex:0 0 auto;border:1px solid var(--line);background-size:cover;background-position:center}
+.lyr .sep{height:1px;background:var(--line);margin:7px 4px}
+.lyr .tog{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;font-size:12.5px;color:var(--ink2)}
+.sws{position:relative;width:38px;height:21px;border-radius:999px;background:#3a322c;flex:0 0 auto;transition:background .15s}
+.sws i{position:absolute;top:2.5px;left:2.5px;width:16px;height:16px;border-radius:50%;background:#8b7f72;transition:.15s}
+.sws.on{background:var(--accent)}
+.sws.on i{left:19.5px;background:#1a1512}
+
+/* ---------- left drawer ---------- */
+.drawer{position:absolute;z-index:620;top:calc(64px + env(safe-area-inset-top));left:12px;bottom:132px;width:330px;
+  display:flex;flex-direction:column;overflow:hidden;transition:transform .26s cubic-bezier(.4,0,.2,1),opacity .2s}
+.drawer.hide{transform:translateX(-118%);opacity:0;pointer-events:none}
+.dr-top{padding:11px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.srch{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 11px}
+.srch input{flex:1;min-width:0;background:none;border:0;outline:none;font-size:13px}
+.srch input::placeholder{color:var(--ink3)}
+.srch .x{color:var(--ink3);font-size:15px;padding:0 2px}
+.tagbar{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.tg{padding:5px 10px;border-radius:999px;font-size:11.5px;border:1px solid var(--line);color:var(--ink2);
+  display:inline-flex;align-items:center;gap:5px;line-height:1.3}
+.tg .d{width:7px;height:7px;border-radius:50%}
+.tg.on{color:#1a1512;font-weight:600;border-color:transparent}
+.geo{max-height:214px;overflow:auto;border-bottom:1px solid var(--line);display:none}
+.geo.open{display:block}
+.geo .it{padding:10px 13px;border-bottom:1px solid rgba(58,50,44,.5);cursor:pointer}
+.geo .it:hover{background:var(--bg3)}
+.geo .it b{display:block;font-size:13px;font-weight:500}
+.geo .it span{font-size:11px;color:var(--ink3)}
+.list{flex:1;overflow:auto;overscroll-behavior:contain}
+.card{display:flex;gap:11px;padding:11px 12px;border-bottom:1px solid rgba(58,50,44,.55);cursor:pointer;position:relative}
+.card:hover{background:rgba(36,31,27,.75)}
+.card.act{background:rgba(224,160,74,.11);box-shadow:inset 3px 0 0 var(--accent)}
+.card.dim{opacity:.34}
+.card .th{width:52px;height:52px;border-radius:9px;flex:0 0 auto;background:var(--bg3) center/cover;
+  display:flex;align-items:center;justify-content:center;font-size:19px;overflow:hidden}
+.card .bd{min-width:0;flex:1}
+.card .t{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .m{font-size:11px;color:var(--ink3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .s{font-size:11.5px;color:var(--ink2);margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .tgs{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
+.card .tgs i{font-style:normal;font-size:10px;padding:2px 7px;border-radius:999px;background:var(--bg3);color:var(--ink2)}
+.empty{padding:34px 22px;text-align:center;color:var(--ink3);font-size:12.5px;line-height:1.9}
+.dr-bt{padding:9px 12px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;justify-content:space-between;font-size:11px;color:var(--ink3);flex:0 0 auto}
+.lnk{color:var(--ink2);font-size:11px;text-decoration:none;border-bottom:1px dashed var(--line);cursor:pointer}
+.lnk:hover{color:var(--accent)}
+
+/* ---------- timeline ---------- */
+.tl{position:absolute;z-index:620;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));
+  width:min(740px,calc(100vw - 24px));padding:11px 14px 12px}
+.tl-r1{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.tl-r1 .seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px}
+.tl-r1 .seg button{padding:6px 14px;border-radius:999px;font-size:12.5px;color:var(--ink2)}
+.tl-r1 .seg button.on{background:var(--accent);color:#1a1512;font-weight:600}
+.tl-when{margin-left:auto;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.tl-when b{color:var(--accent);font-size:16px;font-weight:600;letter-spacing:.4px}
+.tl-body{display:none;margin-top:11px}
+.tl-body.open{display:block}
+.yrs{display:flex;gap:3px;overflow:auto;padding-bottom:7px;scrollbar-width:none}
+.yrs::-webkit-scrollbar{display:none}
+.yrs button{padding:4px 9px;border-radius:7px;font-size:11.5px;color:var(--ink3);flex:0 0 auto}
+.yrs button:hover{color:var(--ink)}
+.yrs button.on{background:var(--bg3);color:var(--accent);font-weight:600}
+.sld{display:flex;align-items:center;gap:10px;margin-top:2px}
+.sld input[type=range]{flex:1;min-width:0;-webkit-appearance:none;appearance:none;height:22px;background:none}
+.sld input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:#3f362f}
+.sld input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;
+  background:var(--accent);margin-top:-6.5px;border:2px solid #1a1512;box-shadow:0 1px 5px rgba(0,0,0,.5)}
+.sld input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:#3f362f}
+.sld input[type=range]::-moz-range-thumb{width:15px;height:15px;border:2px solid #1a1512;border-radius:50%;background:var(--accent)}
+.ib{width:31px;height:31px;border-radius:9px;background:var(--bg);border:1px solid var(--line);color:var(--ink2);
+  display:flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 auto}
+.ib:hover{color:var(--ink);border-color:#4d423a}
+.ib.on{background:var(--accent);color:#1a1512;border-color:var(--accent)}
+.tl-r3{display:flex;align-items:center;gap:7px;margin-top:9px;flex-wrap:wrap}
+.mini{font-size:11px;color:var(--ink3);padding:4px 9px;border:1px solid var(--line);border-radius:999px}
+.mini:hover{color:var(--ink)}
+.mini.on{color:#1a1512;background:var(--accent);border-color:var(--accent);font-weight:600}
+.tl-note{font-size:10.5px;color:var(--ink3);margin-top:7px;line-height:1.6}
+
+/* ---------- curtain ---------- */
+#curtain{position:absolute;inset:0;z-index:450;display:none;pointer-events:none}
+#curtain.on{display:block}
+#curtain .bar{position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,.85);
+  box-shadow:0 0 12px rgba(0,0,0,.6);pointer-events:none}
+#curtain .grip{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,.94);color:#1a1512;display:flex;align-items:center;justify-content:center;
+  font-size:14px;cursor:ew-resize;pointer-events:auto;box-shadow:0 3px 14px rgba(0,0,0,.5);touch-action:none}
+#curtain .lb{position:absolute;top:14px;padding:5px 11px;border-radius:999px;background:rgba(18,16,14,.86);
+  font-size:11.5px;color:var(--ink);white-space:nowrap;border:1px solid var(--line)}
+
+/* ---------- markers ---------- */
+.pin{position:relative;width:36px;height:36px;margin-left:-18px;margin-top:-40px;
+  transition:transform .16s,filter .16s;will-change:transform}
+.pin .bub{position:absolute;inset:0;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);
+  border:2px solid rgba(255,255,255,.9);box-shadow:0 3px 10px rgba(0,0,0,.55);overflow:hidden}
+.pin .bub .im{position:absolute;inset:0;transform:rotate(45deg) scale(1.45);background-size:cover;background-position:center}
+.pin .bub .em{position:absolute;inset:0;transform:rotate(45deg);display:flex;align-items:center;justify-content:center;font-size:15px}
+.pin.sel{transform:scale(1.24)}
+.pin.dim{filter:grayscale(1) opacity(.4)}
+.pin .lbl{position:absolute;top:38px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11px;
+  padding:2px 7px;border-radius:6px;background:rgba(18,16,14,.86);color:var(--ink);border:1px solid var(--line);
+  max-width:132px;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.draft{width:24px;height:24px;margin-left:-12px;margin-top:-12px;border-radius:50%;border:3px solid #fff;
+  background:var(--accent2);box-shadow:0 0 0 8px rgba(201,111,74,.28),0 2px 10px rgba(0,0,0,.5);animation:pp 1.5s infinite}
+@keyframes pp{50%{box-shadow:0 0 0 16px rgba(201,111,74,.06),0 2px 10px rgba(0,0,0,.5)}}
+
+/* ---------- sheet (detail / editor) ---------- */
+.sheet{position:absolute;z-index:680;right:12px;top:calc(64px + env(safe-area-inset-top));bottom:132px;width:392px;
+  display:flex;flex-direction:column;overflow:hidden;transform:translateX(118%);opacity:0;pointer-events:none;
+  transition:transform .28s cubic-bezier(.4,0,.2,1),opacity .2s}
+.sheet.open{transform:none;opacity:1;pointer-events:auto}
+.sh-hd{display:flex;align-items:center;gap:10px;padding:12px 13px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.sh-hd b{font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sh-bd{flex:1;overflow:auto;padding:13px;overscroll-behavior:contain}
+.sh-ft{padding:11px 13px;border-top:1px solid var(--line);display:flex;gap:9px;flex:0 0 auto}
+.btn{flex:1;padding:11px;border-radius:11px;font-size:13.5px;font-weight:600;text-align:center;
+  background:var(--bg3);color:var(--ink);border:1px solid var(--line)}
+.btn:hover{border-color:#544840}
+.btn.p{background:var(--accent);color:#1a1512;border-color:var(--accent)}
+.btn.p:hover{filter:brightness(1.07)}
+.btn.d{flex:0 0 auto;width:46px;color:var(--err);font-size:15px}
+.f{margin-bottom:14px}
+.f>label{display:block;font-size:11px;letter-spacing:.6px;color:var(--ink3);margin-bottom:6px}
+.f input[type=text],.f textarea,.f select,.f input[type=number]{width:100%;background:var(--bg);border:1px solid var(--line);
+  border-radius:10px;padding:10px 12px;outline:none;font-size:13.5px}
+.f textarea{min-height:112px;resize:vertical;line-height:1.7}
+.f input:focus,.f textarea:focus{border-color:var(--accent)}
+.row{display:flex;gap:9px;align-items:center}
+.row>*{min-width:0}
+.hint{font-size:10.5px;color:var(--ink3);margin-top:5px;line-height:1.6}
+.ph-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.ph{position:relative;aspect-ratio:1;border-radius:9px;overflow:hidden;background:var(--bg3);cursor:pointer}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph .rm{position:absolute;top:3px;right:3px;width:21px;height:21px;border-radius:50%;background:rgba(0,0,0,.72);
+  color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
+.ph.add{display:flex;align-items:center;justify-content:center;border:1px dashed var(--line);color:var(--ink3);font-size:21px}
+.ph.add:hover{border-color:var(--accent);color:var(--accent)}
+.ph .sp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);font-size:11px}
+.meta{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:13px}
+.meta i{font-style:normal;font-size:11.5px;padding:4px 10px;border-radius:999px;background:var(--bg3);color:var(--ink2)}
+.story{font-size:14px;line-height:1.95;white-space:pre-wrap;word-break:break-word;color:#e8e0d6}
+.crd{background:var(--bg3);border:1px solid var(--line);border-radius:11px;padding:12px;margin-bottom:13px}
+.crd h4{margin:0 0 7px;font-size:12.5px}
+.crd p{margin:0;font-size:11.5px;color:var(--ink2);line-height:1.75}
+.sql{background:#0d0c0b;border:1px solid var(--line);border-radius:9px;padding:10px;font:11px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:#b9d8b0;max-height:180px;overflow:auto;white-space:pre;margin:9px 0}
+
+/* ---------- fab / toast / lightbox / modal ---------- */
+.fab{position:absolute;z-index:640;right:12px;bottom:calc(150px + env(safe-area-inset-bottom));
+  display:flex;align-items:center;gap:8px;padding:13px 18px;border-radius:999px;background:var(--accent);color:#1a1512;
+  font-size:14px;font-weight:700;box-shadow:0 8px 26px rgba(224,160,74,.32)}
+.fab:hover{filter:brightness(1.07)}
+.fab.on{background:var(--accent2);color:#fff}
+.tip{position:absolute;z-index:700;left:50%;transform:translateX(-50%);top:calc(66px + env(safe-area-inset-top));
+  padding:9px 17px;border-radius:999px;background:rgba(224,160,74,.95);color:#1a1512;font-size:12.5px;font-weight:600;
+  display:none;box-shadow:var(--sh)}
+.tip.on{display:block}
+#toast{position:absolute;z-index:900;left:50%;transform:translateX(-50%);bottom:calc(160px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;gap:7px;align-items:center;pointer-events:none}
+#toast div{padding:9px 17px;border-radius:999px;background:rgba(36,31,27,.96);border:1px solid var(--line);
+  font-size:12.5px;box-shadow:var(--sh);animation:up .2s}
+@keyframes up{from{opacity:0;transform:translateY(9px)}}
+#lb{position:fixed;inset:0;z-index:950;background:rgba(8,7,6,.96);display:none;align-items:center;justify-content:center}
+#lb.on{display:flex}
+#lb img{max-width:94vw;max-height:82vh;object-fit:contain;border-radius:7px}
+#lb .nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;
+  background:rgba(255,255,255,.12);color:#fff;font-size:19px;display:flex;align-items:center;justify-content:center}
+#lb .nav.l{left:16px}#lb .nav.r{right:16px}
+#lb .cl{position:absolute;top:calc(16px + env(safe-area-inset-top));right:16px;width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,.12);color:#fff;font-size:17px;display:flex;align-items:center;justify-content:center}
+#lb .cap{position:absolute;bottom:calc(22px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
+  font-size:12px;color:#c9bfb3;text-align:center;max-width:88vw}
+#modal{position:fixed;inset:0;z-index:920;background:rgba(8,7,6,.7);display:none;align-items:center;justify-content:center;padding:18px}
+#modal.on{display:flex}
+.mw{width:min(520px,100%);max-height:86vh;display:flex;flex-direction:column;overflow:hidden}
+.mw .sh-bd{padding:15px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#3d342d;border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+
+@media (max-width:900px){
+  .drawer{width:min(330px,calc(100vw - 24px))}
+  .sheet{width:min(392px,calc(100vw - 24px))}
+}
+@media (max-width:640px){
+  .hd{gap:6px}
+  .brand{padding:7px 11px}.brand b{font-size:13.5px}
+  .chip{padding:7px 10px;font-size:11.5px}
+  .drawer{left:0;right:0;width:auto;top:auto;bottom:0;max-height:66vh;border-radius:16px 16px 0 0;border-bottom:0}
+  .drawer.hide{transform:translateY(102%)}
+  .sheet{left:0;right:0;width:auto;top:auto;bottom:0;max-height:88vh;border-radius:16px 16px 0 0;border-bottom:0}
+  .sheet.open{transform:none}
+  .sheet.hide{transform:translateY(102%)}
+  .tl{width:calc(100vw - 16px);bottom:calc(8px + env(safe-area-inset-bottom));padding:9px 11px 10px}
+  .tl-when b{font-size:14px}
+  .fab{bottom:calc(132px + env(safe-area-inset-bottom));right:10px;padding:11px 15px;font-size:13px}
+  .lyr{width:196px}
+  #toast{bottom:calc(142px + env(safe-area-inset-bottom))}
+}
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<div id="curtain">
+  <div class="lb" id="cLeft">过去</div>
+  <div class="lb" id="cRight">现在</div>
+  <div class="bar" id="cBar"><div class="grip" id="cGrip">⇔</div></div>
+</div>
+
+<div class="hd">
+  <div class="panel brand"><span class="dot"></span><b>回忆地图</b></div>
+  <button class="chip sync" id="syncChip"><span class="led"></span><span id="syncTxt">本地</span></button>
+  <button class="chip" id="listBtn"><span class="i">☰</span><span>回忆 <b id="cnt">0</b></span></button>
+</div>
+
+<div class="tr">
+  <button class="chip" id="lyrBtn"><span class="i">◈</span><span>图层</span></button>
+  <div class="panel lyr" id="lyrPanel"></div>
+</div>
+
+<div class="panel drawer hide" id="drawer">
+  <div class="dr-top">
+    <div class="srch">
+      <span style="color:var(--ink3)">⌕</span>
+      <input id="q" placeholder="搜回忆，或搜地名跳转…" autocomplete="off">
+      <button class="x" id="qx" style="display:none">✕</button>
+    </div>
+    <div class="tagbar" id="tagbar"></div>
+  </div>
+  <div class="geo" id="geo"></div>
+  <div class="list" id="list"></div>
+  <div class="dr-bt">
+    <span id="statLine">—</span>
+    <span><a class="lnk" id="expBtn">导出</a> · <a class="lnk" id="impBtn">导入</a></span>
+  </div>
+</div>
+
+<div class="panel sheet" id="sheet">
+  <div class="sh-hd"><b id="shTitle">—</b><button class="ib" id="shClose">✕</button></div>
+  <div class="sh-bd" id="shBody"></div>
+  <div class="sh-ft" id="shFoot"></div>
+</div>
+
+<button class="fab" id="fab">＋ <span id="fabTxt">标记回忆</span></button>
+<div class="tip" id="tip">点地图选位置 · 可拖动微调 · Esc 取消</div>
+
+<div class="panel tl" id="tl">
+  <div class="tl-r1">
+    <div class="seg">
+      <button id="mNow" class="on">现在</button>
+      <button id="mPast">时光机</button>
+    </div>
+    <button class="ib" id="cmpBtn" title="卷帘对比">◫</button>
+    <div class="tl-when" id="whenTxt">最新影像</div>
+  </div>
+  <div class="tl-body" id="tlBody">
+    <div class="yrs" id="yrs"></div>
+    <div class="sld">
+      <button class="ib" id="prevB">‹</button>
+      <input type="range" id="rng" min="0" max="0" value="0">
+      <button class="ib" id="nextB">›</button>
+      <button class="ib" id="playB">▶</button>
+    </div>
+    <div class="tl-r3">
+      <button class="mini" id="onlyChg">只看有变化的版本</button>
+      <button class="mini" id="syncPts">回忆随时间浮现</button>
+      <span class="mini" id="verInfo" style="border:0;padding-left:2px">196 期 · 2014–2026</span>
+    </div>
+    <div class="tl-note" id="tlNote">影像来自 Esri Wayback 历史存档，越放大越清楚。老家还在的年份，往左拖就能看到。</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="lb"><button class="cl" id="lbClose">✕</button><button class="nav l" id="lbPrev">‹</button>
+  <img id="lbImg" alt=""><button class="nav r" id="lbNext">›</button><div class="cap" id="lbCap"></div></div>
+<div id="modal"><div class="panel mw"><div class="sh-hd"><b id="mTitle">—</b><button class="ib" id="mClose">✕</button></div>
+  <div class="sh-bd" id="mBody"></div><div class="sh-ft" id="mFoot"></div></div></div>
+
+<input type="file" id="fileIn" accept="image/*" multiple style="display:none">
+<input type="file" id="jsonIn" accept=".json,application/json" style="display:none">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+
+(function(){
+"use strict";
+/* ================= config ================= */
+var SB_URL   = "https://gwerzaaishbvtaxhwezv.supabase.co";
+var SB_KEY   = "sb_publishable_mlvyWH8gGyPjwvFgVbhRjA__HE3yrwr";
+var T_PLACE  = "memory_places";
+var T_PHOTO  = "memory_photos";
+var LS_STATE = "memory-map-v1";
+var LS_SECRET= "expense-app-secret";
+var LS_VIEW  = "memory-map-view";
+var LS_OUT   = "memory-map-outbox";
+
+var WB=[["2014-02-20",10],["2014-03-26",4230],["2014-04-30",19819],["2014-05-14",16513],["2014-06-11",31144],["2014-06-25",11033],["2014-07-02",3026],["2014-07-30",5232],["2014-09-17",25586],["2014-10-01",22692],["2014-10-29",11019],["2014-11-12",30195],["2014-12-03",23383],["2014-12-18",14720],["2014-12-30",5844],["2015-01-21",20222],["2015-02-18",10443],["2015-03-18",15084],["2015-03-25",2730],["2015-04-15",9203],["2015-04-30",23880],["2015-05-13",19930],["2015-06-24",11952],["2015-07-08",24007],["2015-08-19",28219],["2015-09-02",30584],["2015-09-16",1431],["2015-09-30",3630],["2015-10-14",10850],["2015-10-28",11092],["2015-11-18",8781],["2015-12-16",28163],["2016-01-13",3515],["2016-02-04",6354],["2016-02-17",11262],["2016-03-02",20443],["2016-03-16",19085],["2016-04-20",388],["2016-04-28",5769],["2016-05-11",8551],["2016-06-13",11509],["2016-07-06",13240],["2016-07-20",5097],["2016-08-11",23601],["2016-08-31",9175],["2016-09-14",6984],["2016-10-12",13770],["2016-10-25",4222],["2016-11-16",21750],["2016-12-07",6678],["2016-12-20",18966],["2017-01-11",577],["2017-01-25",9486],["2017-02-08",27946],["2017-02-27",31026],["2017-03-15",29387],["2017-03-29",5205],["2017-04-19",1052],["2017-05-03",784],["2017-05-17",20365],["2017-05-31",14342],["2017-06-14",14765],["2017-06-27",4073],["2017-07-14",3319],["2017-08-10",14035],["2017-08-30",25379],["2017-09-13",18358],["2017-10-04",15212],["2017-10-25",23264],["2017-11-16",25521],["2018-01-08",13161],["2018-01-18",13045],["2018-01-31",10768],["2018-02-23",13067],["2018-03-14",8255],["2018-03-28",7072],["2018-04-11",20399],["2018-04-25",1296],["2018-05-16",32337],["2018-06-06",8249],["2018-06-27",11334],["2018-07-25",14829],["2018-08-15",1858],["2018-09-06",2168],["2018-09-26",14426],["2018-10-17",18820],["2018-11-07",3201],["2018-11-29",239],["2018-12-14",23448],["2019-01-09",6036],["2019-01-31",25944],["2019-02-21",17677],["2019-03-13",4383],["2019-04-03",18691],["2019-04-24",18063],["2019-05-15",9598],["2019-06-05",12576],["2019-06-26",645],["2019-07-17",16681],["2019-08-07",17216],["2019-08-28",30442],["2019-09-18",9892],["2019-10-09",11351],["2019-10-30",11060],["2019-12-12",4756],["2020-01-08",23001],["2020-01-30",21485],["2020-02-20",8495],["2020-03-23",16062],["2020-04-08",26751],["2020-04-29",15045],["2020-05-20",32645],["2020-06-10",11135],["2020-07-01",18289],["2020-07-22",9549],["2020-08-12",6049],["2020-09-02",9181],["2020-09-23",19187],["2020-10-14",119],["2020-11-18",20753],["2020-12-16",29260],["2021-01-13",1049],["2021-02-24",9812],["2021-03-17",5359],["2021-04-08",6863],["2021-04-28",27659],["2021-05-19",15423],["2021-06-09",48376],["2021-06-30",13534],["2021-07-21",8432],["2021-08-11",51423],["2021-09-01",47568],["2021-09-22",51313],["2021-10-13",16749],["2021-11-03",42403],["2021-11-30",48624],["2021-12-21",26120],["2022-01-12",42663],["2022-02-02",26083],["2022-02-24",10312],["2022-03-16",10321],["2022-04-06",48232],["2022-04-27",16245],["2022-05-18",5314],["2022-06-08",44710],["2022-06-29",4905],["2022-07-20",13851],["2022-08-10",17825],["2022-08-31",45441],["2022-09-21",47471],["2022-10-12",44988],["2022-11-02",7110],["2022-12-14",45134],["2023-01-11",11475],["2023-02-23",57965],["2023-03-15",44873],["2023-04-05",37890],["2023-05-03",46399],["2023-06-13",25982],["2023-06-29",47963],["2023-08-10",17632],["2023-08-31",64776],["2023-10-11",1034],["2023-11-01",12457],["2023-12-07",56102],["2024-01-18",41468],["2024-02-08",37965],["2024-03-07",60013],["2024-03-28",13968],["2024-05-09",52930],["2024-06-06",12428],["2024-06-27",39767],["2024-08-15",32553],["2024-09-19",20337],["2024-10-10",56450],["2024-11-18",49849],["2024-12-12",16453],["2025-01-30",36557],["2025-02-27",34007],["2025-03-27",6543],["2025-04-24",27982],["2025-05-29",25285],["2025-06-26",48925],["2025-07-31",49999],["2025-09-04",52304],["2025-09-25",58924],["2025-10-23",20512],["2025-11-20",51127],["2025-12-18",13192],["2026-01-29",22252],["2026-02-26",64001],["2026-03-25",22869],["2026-04-30",49059],["2026-05-28",10842],["2026-06-30",32246],["2026-08-05",26334]];
+
+var TAGS = [
+  {k:"老家", c:"#e0563f", e:"🏠"},
+  {k:"童年", c:"#f0a92e", e:"🪁"},
+  {k:"学校", c:"#4a9de0", e:"🎒"},
+  {k:"工作", c:"#7b6cf0", e:"💼"},
+  {k:"旅行", c:"#2fb37a", e:"✈️"},
+  {k:"相遇", c:"#e0619c", e:"💛"},
+  {k:"告别", c:"#8a8f99", e:"🕯️"},
+  {k:"美食", c:"#d9822b", e:"🍜"},
+  {k:"日常", c:"#5aa6a0", e:"☕"}
+];
+var TAGMAP={}; TAGS.forEach(function(t){TAGMAP[t.k]=t;});
+var PALETTE=["#e0563f","#f0a92e","#4a9de0","#7b6cf0","#2fb37a","#e0619c","#d9822b","#5aa6a0","#a9772e","#6f8fd0"];
+function tagColor(k){ if(TAGMAP[k]) return TAGMAP[k].c; var h=0; for(var i=0;i<k.length;i++) h=(h*31+k.charCodeAt(i))>>>0; return PALETTE[h%PALETTE.length]; }
+function tagEmoji(k){ return TAGMAP[k]?TAGMAP[k].e:"📍"; }
+
+var ESRI_ATTR='影像 © Esri, Maxar, Earthstar Geographics';
+var LAYERS=[
+  {id:"esri",  g:"wgs", n:"现在 · 高清影像", sub:"Esri World Imagery",
+   url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+   o:{maxZoom:21,maxNativeZoom:19,attribution:ESRI_ATTR}, sw:"#3f5a3a"},
+  {id:"wb",    g:"wgs", n:"时光机 · 历史影像", sub:"Esri Wayback 2014–2026", wayback:true,
+   o:{maxZoom:21,maxNativeZoom:19,subdomains:["a","b"],attribution:ESRI_ATTR+' · Wayback'}, sw:"#5b4a35"},
+  {id:"eox",   g:"wgs", n:"年度影像 · 无云", sub:"Sentinel-2 cloudless 2017–2025", eox:true,
+   o:{maxZoom:19,maxNativeZoom:17,attribution:'Sentinel-2 cloudless © EOX IT Services'}, sw:"#33513f"},
+  {id:"street",g:"wgs", n:"街道地图", sub:"Esri World Street Map",
+   url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+   o:{maxZoom:20,maxNativeZoom:19,attribution:'© Esri'}, sw:"#d8cfc2"},
+  {id:"amap",  g:"gcj", n:"高德街道 · 中文",  sub:"地名最全，坐标已自动纠偏",
+   url:"https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+   o:{maxZoom:20,maxNativeZoom:18,subdomains:["1","2","3","4"],attribution:'© 高德地图'}, sw:"#cfd8c2"},
+  {id:"amapst",g:"gcj", n:"高德卫星", sub:"含中文标注参考",
+   url:"https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
+   o:{maxZoom:20,maxNativeZoom:18,subdomains:["1","2","3","4"],attribution:'© 高德地图'}, sw:"#40513a"}
+];
+var LBL_URL="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}";
+var EOX_YEARS=[2017,2018,2019,2020,2021,2022,2023,2024,2025];
+function wbUrl(rel){ return "https://wayback-{s}.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/default028mm/MapServer/tile/"+rel+"/{z}/{y}/{x}"; }
+function eoxUrl(y){ return "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-"+y+"_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg"; }
+
+/* ================= tiny utils ================= */
+function $(s){ return document.querySelector(s); }
+function ce(t,c,h){ var e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e; }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m];}); }
+function uid(){ return "mp-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8); }
+function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+function debounce(fn,ms){ var t; return function(){ var a=arguments,s=this; clearTimeout(t); t=setTimeout(function(){fn.apply(s,a);},ms); }; }
+function toast(msg,ms){
+  var box=$("#toast"), d=ce("div",null,esc(msg)); box.appendChild(d);
+  setTimeout(function(){ d.style.transition="opacity .25s"; d.style.opacity=0; setTimeout(function(){ d.remove(); },260); }, ms||2100);
+}
+function fmtRange(a,b){
+  if(!a&&!b) return "";
+  var f=function(s){ if(!s) return ""; var p=s.split("-"); return p[0]+"年"+(p[1]?(+p[1])+"月":"")+(p[2]?(+p[2])+"日":""); };
+  if(a&&b&&a!==b) return f(a)+" – "+f(b);
+  return f(a||b);
+}
+function yearOf(s){ return s?parseInt(String(s).slice(0,4),10):null; }
+
+/* ---- GCJ-02 <-> WGS-84 (中国境内偏移纠正) ---- */
+var PI=Math.PI, AA=6378245.0, EE=0.00669342162296594323;
+function outCN(lat,lng){ return !(lng>=72.004&&lng<=137.8347&&lat>=0.8293&&lat<=55.8271); }
+function tLat(x,y){ var r=-100+2*x+3*y+.2*y*y+.1*x*y+.2*Math.sqrt(Math.abs(x));
+  r+=(20*Math.sin(6*x*PI)+20*Math.sin(2*x*PI))*2/3; r+=(20*Math.sin(y*PI)+40*Math.sin(y/3*PI))*2/3;
+  r+=(160*Math.sin(y/12*PI)+320*Math.sin(y*PI/30))*2/3; return r; }
+function tLng(x,y){ var r=300+x+2*y+.1*x*x+.1*x*y+.1*Math.sqrt(Math.abs(x));
+  r+=(20*Math.sin(6*x*PI)+20*Math.sin(2*x*PI))*2/3; r+=(20*Math.sin(x*PI)+40*Math.sin(x/3*PI))*2/3;
+  r+=(150*Math.sin(x/12*PI)+300*Math.sin(x/30*PI))*2/3; return r; }
+function wgs2gcj(lat,lng){
+  if(outCN(lat,lng)) return [lat,lng];
+  var dLat=tLat(lng-105,lat-35), dLng=tLng(lng-105,lat-35);
+  var rad=lat/180*PI, m=Math.sin(rad); m=1-EE*m*m; var sq=Math.sqrt(m);
+  dLat=(dLat*180)/((AA*(1-EE))/(m*sq)*PI);
+  dLng=(dLng*180)/(AA/sq*Math.cos(rad)*PI);
+  return [lat+dLat,lng+dLng];
+}
+function gcj2wgs(lat,lng){
+  if(outCN(lat,lng)) return [lat,lng];
+  var g=wgs2gcj(lat,lng);
+  var la=lat-(g[0]-lat), ln=lng-(g[1]-lng);
+  for(var i=0;i<3;i++){ var t=wgs2gcj(la,ln); la+=lat-t[0]; ln+=lng-t[1]; }
+  return [la,ln];
+}
+function ll2tile(lat,lng,z){
+  var n=Math.pow(2,z);
+  var x=Math.floor((lng+180)/360*n);
+  var y=Math.floor((1-Math.log(Math.tan(lat*PI/180)+1/Math.cos(lat*PI/180))/PI)/2*n);
+  return [clamp(x,0,n-1),clamp(y,0,n-1)];
+}
+
+/* ================= state ================= */
+var S={ places:[], baseId:"esri", labels:false, mode:"now", relIdx:WB.length-1,
+        cmp:false, cmpPct:50, onlyChg:false, syncPts:false, tags:[], q:"", sel:null,
+        secret:localStorage.getItem(LS_SECRET)||"", cloud:"local", eoxYear:2019 };
+var photoCache={};   /* placeId -> [photo] */
+var draft=null;      /* {marker, lat, lng} */
+var markers={};      /* id -> marker */
+
+function loadLocal(){
+  try{
+    var raw=localStorage.getItem(LS_STATE); if(!raw) return;
+    var d=JSON.parse(raw);
+    if(d&&Array.isArray(d.places)) S.places=d.places.filter(function(p){ return p&&p.id&&isFinite(p.lat)&&isFinite(p.lng); });
+    if(d&&d.baseId) S.baseId=d.baseId;
+    if(d&&typeof d.labels==="boolean") S.labels=d.labels;
+  }catch(e){ console.warn("local load",e); }
+}
+function saveLocal(){
+  var body={v:1,places:S.places,baseId:S.baseId,labels:S.labels};
+  try{ localStorage.setItem(LS_STATE,JSON.stringify(body)); }
+  catch(e){
+    try{ localStorage.setItem(LS_STATE,JSON.stringify({v:1,baseId:S.baseId,labels:S.labels,
+      places:S.places.map(function(p){ var q={}; for(var k in p) if(k!=="cover") q[k]=p[k]; return q; })})); toast("本地空间不足，封面缩略图未离线缓存"); }
+    catch(e2){ console.warn("save fail",e2); }
+  }
+}
+function outbox(){ try{ return JSON.parse(localStorage.getItem(LS_OUT)||"[]"); }catch(e){ return []; } }
+function setOutbox(a){ try{ localStorage.setItem(LS_OUT,JSON.stringify(a.slice(-400))); }catch(e){} }
+function queueOp(op){ var a=outbox(); a=a.filter(function(o){ return !(o.t===op.t&&o.id===op.id); }); a.push(op); setOutbox(a); }
+
+/* ================= IndexedDB (photos) ================= */
+var _db=null, _dbDead=false, _dbWarned=false;
+function idb(){
+  if(_db) return Promise.resolve(_db);
+  if(_dbDead) return Promise.reject(new Error("idb unavailable"));
+  return new Promise(function(res,rej){
+    if(!window.indexedDB){ _dbDead=true; return rej(new Error("no idb")); }
+    var settled=false;
+    function fail(e){
+      if(settled) return; settled=true; _dbDead=true;
+      if(!_dbWarned){ _dbWarned=true; setTimeout(function(){
+        if(S.cloud!=="synced") try{ toast("这个环境不让存本地照片，建议开云同步"); }catch(_){}
+      },300); }
+      rej(e||new Error("idb error"));
+    }
+    setTimeout(function(){ fail(new Error("idb timeout")); },4000);
+    var r;
+    try{ r=indexedDB.open("memory-map",1); }catch(e){ return fail(e); }
+    r.onupgradeneeded=function(){ var db=r.result;
+      if(!db.objectStoreNames.contains("photos")){ var st=db.createObjectStore("photos",{keyPath:"id"}); st.createIndex("placeId","placeId",{unique:false}); } };
+    r.onsuccess=function(){ if(settled) return; settled=true; _db=r.result; res(_db); };
+    r.onerror=function(){ fail(r.error); };
+    r.onblocked=function(){ fail(new Error("idb blocked")); };
+  });
+}
+function idbPut(p){ return idb().then(function(db){ return new Promise(function(res,rej){
+  var tx=db.transaction("photos","readwrite"); tx.objectStore("photos").put(p);
+  tx.oncomplete=function(){res(p);}; tx.onerror=function(){rej(tx.error);}; }); }).catch(function(){ return p; }); }
+function idbDel(id){ return idb().then(function(db){ return new Promise(function(res){
+  var tx=db.transaction("photos","readwrite"); tx.objectStore("photos").delete(id); tx.oncomplete=res; tx.onerror=res; }); }).catch(function(){}); }
+function idbByPlace(pid){ return idb().then(function(db){ return new Promise(function(res){
+  var out=[],tx=db.transaction("photos","readonly"),rq=tx.objectStore("photos").index("placeId").openCursor(IDBKeyRange.only(pid));
+  rq.onsuccess=function(){ var c=rq.result; if(c){ out.push(c.value); c.continue(); } else res(out); };
+  rq.onerror=function(){ res(out); }; }); }).catch(function(){ return []; }); }
+function idbAll(){ return idb().then(function(db){ return new Promise(function(res){
+  var out=[],tx=db.transaction("photos","readonly"),rq=tx.objectStore("photos").openCursor();
+  rq.onsuccess=function(){ var c=rq.result; if(c){ out.push(c.value); c.continue(); } else res(out); };
+  rq.onerror=function(){ res(out); }; }); }).catch(function(){ return []; }); }
+
+/* ================= cloud ================= */
+function hdrs(extra){
+  var h={ apikey:SB_KEY, Authorization:"Bearer "+SB_KEY };
+  if(S.secret) h["x-app-secret"]=S.secret;
+  if(extra) for(var k in extra) h[k]=extra[k];
+  return h;
+}
+function setSync(kind,txt){
+  S.cloud=kind; var c=$("#syncChip");
+  c.className="chip sync "+(kind==="synced"?"ok":kind==="busy"?"busy":kind==="offline"?"off":"");
+  $("#syncTxt").textContent=txt||({synced:"云端已同步",busy:"同步中",offline:"离线",local:"本地",needsetup:"待建表",locked:"未解锁"}[kind]||kind);
+}
+function api(path,opt){
+  opt=opt||{};
+  return fetch(SB_URL+"/rest/v1/"+path,{ method:opt.method||"GET", headers:hdrs(opt.headers), body:opt.body })
+    .then(function(r){ return r.text().then(function(t){
+      var j=null; try{ j=t?JSON.parse(t):null; }catch(e){}
+      return { ok:r.ok, status:r.status, data:j, raw:t }; }); });
+}
+function rowOf(p){
+  var d={}; for(var k in p) if(k!=="id"&&k!=="lat"&&k!=="lng") d[k]=p[k];
+  return { id:p.id, lat:p.lat, lng:p.lng, data:d, updated_at:new Date().toISOString() };
+}
+function placeOf(row){
+  var p=Object.assign({},row.data||{},{ id:row.id, lat:+row.lat, lng:+row.lng });
+  if(!p.updatedAt) p.updatedAt=row.updated_at?Date.parse(row.updated_at):0;
+  return p;
+}
+function cloudReady(){ return !!S.secret && (S.cloud==="synced"||S.cloud==="busy"); }
+
+function pushPlace(p){
+  if(!S.secret) return Promise.resolve();
+  return api(T_PLACE+"?on_conflict=id",{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},
+    body:JSON.stringify([rowOf(p)])}).then(function(r){
+      if(!r.ok){ if(r.status===404) setSync("needsetup"); else { queueOp({t:"place",id:p.id}); setSync("offline"); } }
+      return r; }).catch(function(){ queueOp({t:"place",id:p.id}); setSync("offline"); });
+}
+function delPlaceCloud(id){
+  if(!S.secret) return Promise.resolve();
+  return api(T_PHOTO+"?place_id=eq."+encodeURIComponent(id),{method:"DELETE",headers:{Prefer:"return=minimal"}})
+    .then(function(){ return api(T_PLACE+"?id=eq."+encodeURIComponent(id),{method:"DELETE",headers:{Prefer:"return=minimal"}}); })
+    .then(function(r){ if(!r.ok&&r.status!==404) queueOp({t:"delPlace",id:id}); })
+    .catch(function(){ queueOp({t:"delPlace",id:id}); });
+}
+function pushPhoto(ph){
+  if(!S.secret) return Promise.resolve();
+  return api(T_PHOTO+"?on_conflict=id",{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},
+    body:JSON.stringify([{id:ph.id,place_id:ph.placeId,data:{img:ph.img,name:ph.name||"",w:ph.w||0,h:ph.h||0,createdAt:ph.createdAt||Date.now()}}])})
+    .then(function(r){ if(!r.ok) queueOp({t:"photo",id:ph.id}); return r; })
+    .catch(function(){ queueOp({t:"photo",id:ph.id}); });
+}
+function delPhotoCloud(id){
+  if(!S.secret) return Promise.resolve();
+  return api(T_PHOTO+"?id=eq."+encodeURIComponent(id),{method:"DELETE",headers:{Prefer:"return=minimal"}})
+    .then(function(r){ if(!r.ok&&r.status!==404) queueOp({t:"delPhoto",id:id}); }).catch(function(){ queueOp({t:"delPhoto",id:id}); });
+}
+function flushOutbox(){
+  var ops=outbox(); if(!ops.length||!S.secret) return;
+  setOutbox([]);
+  ops.forEach(function(o){
+    if(o.t==="place"){ var p=byId(o.id); if(p) pushPlace(p); }
+    else if(o.t==="delPlace") delPlaceCloud(o.id);
+    else if(o.t==="delPhoto") delPhotoCloud(o.id);
+    else if(o.t==="photo"){ idb().then(function(db){ var tx=db.transaction("photos","readonly"),rq=tx.objectStore("photos").get(o.id);
+      rq.onsuccess=function(){ if(rq.result) pushPhoto(rq.result); }; }).catch(function(){}); }
+  });
+}
+function bootstrapCloud(){
+  if(!S.secret){ setSync("locked"); return Promise.resolve(); }
+  setSync("busy");
+  return api(T_PLACE+"?select=*").then(function(r){
+    if(r.status===404){ setSync("needsetup"); toast("云端还没建表，点右上角状态按钮一键完成"); promptSetup(); return; }
+    if(!r.ok||!Array.isArray(r.data)){
+      if(r.status===401||r.status===403){ setSync("locked"); toast("密钥不对，云端拒绝访问"); }
+      else setSync("offline");
+      return;
+    }
+    var cloud={}; r.data.forEach(function(row){ var p=placeOf(row); cloud[p.id]=p; });
+    var local={}; S.places.forEach(function(p){ local[p.id]=p; });
+    var merged={}, localOnly=[];
+    Object.keys(local).forEach(function(id){ merged[id]=local[id]; if(!cloud[id]) localOnly.push(local[id]); });
+    Object.keys(cloud).forEach(function(id){
+      var c=cloud[id], l=local[id];
+      merged[id]=(l&&(l.updatedAt||0)>(c.updatedAt||0))?l:c;
+    });
+    S.places=Object.keys(merged).map(function(k){ return merged[k]; });
+    saveLocal(); setSync("synced"); renderAll(); fitIfFirst();
+    localOnly.forEach(pushPlace);
+    flushOutbox();
+  }).catch(function(e){ console.warn(e); setSync("offline"); });
+}
+function loadPhotos(pid){
+  var p=byId(pid), want=p?(p.photoCount||0):0;
+  var cached=photoCache[pid]||[];
+  if(cached.length>=want&&want>0) return Promise.resolve(cached.slice());
+  return idbByPlace(pid).then(function(local){
+    var seen={}, merged=[];
+    cached.concat(local).forEach(function(x){ if(x&&!seen[x.id]){ seen[x.id]=1; merged.push(x); } });
+    if(!S.secret||S.cloud!=="synced"||merged.length>=want) return merged;
+    return api(T_PHOTO+"?place_id=eq."+encodeURIComponent(pid)+"&select=*").then(function(r){
+      if(!r.ok||!Array.isArray(r.data)) return merged;
+      var add=[];
+      r.data.forEach(function(row){
+        if(seen[row.id]) return;
+        var d=row.data||{};
+        var ph={id:row.id,placeId:row.place_id,img:d.img,name:d.name||"",w:d.w||0,h:d.h||0,createdAt:d.createdAt||0};
+        add.push(ph); idbPut(ph);
+      });
+      return merged.concat(add);
+    }).catch(function(){ return merged; });
+  }).then(function(list){
+    list.sort(function(a,b){ return (a.createdAt||0)-(b.createdAt||0); });
+    photoCache[pid]=list; return list;
+  });
+}
+function byId(id){ for(var i=0;i<S.places.length;i++) if(S.places[i].id===id) return S.places[i]; return null; }
+
+/* ================= map ================= */
+var map=L.map("map",{ zoomControl:false, attributionControl:true, minZoom:2, maxZoom:21,
+  worldCopyJump:true, zoomSnap:.5, wheelPxPerZoomLevel:110, tap:true });
+L.control.zoom({position:"bottomright"}).addTo(map);
+map.createPane("basePane"); map.getPane("basePane").style.zIndex=200;
+map.createPane("cmpPane");  map.getPane("cmpPane").style.zIndex=210;
+map.createPane("lblPane");  map.getPane("lblPane").style.zIndex=340; map.getPane("lblPane").style.pointerEvents="none";
+var baseLayer=null, cmpLayer=null, lblLayer=null;
+
+function defOf(id){ for(var i=0;i<LAYERS.length;i++) if(LAYERS[i].id===id) return LAYERS[i]; return LAYERS[0]; }
+function activeGroup(){ return defOf(S.baseId).g; }
+function urlFor(def){
+  if(def.wayback) return wbUrl(WB[clamp(S.relIdx,0,WB.length-1)][1]);
+  if(def.eox)     return eoxUrl(S.eoxYear);
+  return def.url;
+}
+function buildBase(){
+  var def=defOf(S.baseId);
+  if(baseLayer){ map.removeLayer(baseLayer); baseLayer=null; }
+  var o=Object.assign({pane:"basePane"},def.o);
+  baseLayer=L.tileLayer(urlFor(def),o).addTo(map);
+  syncLabels();
+  syncCmp();
+}
+function syncLabels(){
+  if(lblLayer){ map.removeLayer(lblLayer); lblLayer=null; }
+  if(S.labels && activeGroup()==="wgs"){
+    lblLayer=L.tileLayer(LBL_URL,{pane:"lblPane",maxZoom:21,maxNativeZoom:19,opacity:.9}).addTo(map);
+  }
+}
+/* display <-> storage coordinate bridge */
+function disp(lat,lng){ return activeGroup()==="gcj"?wgs2gcj(lat,lng):[lat,lng]; }
+function undisp(lat,lng){ return activeGroup()==="gcj"?gcj2wgs(lat,lng):[lat,lng]; }
+
+function setBase(id){
+  var prev=activeGroup(), c=map.getCenter();
+  S.baseId=id; saveLocal();
+  var now=activeGroup();
+  if(prev!==now){
+    var t=(now==="gcj")?wgs2gcj(c.lat,c.lng):gcj2wgs(c.lat,c.lng);
+    map.setView(t,map.getZoom(),{animate:false});
+  }
+  if(id!=="wb"&&S.mode==="past"&&id!=="eox"){ /* keep mode but base is not historic */ }
+  buildBase(); renderLayerPanel(); renderMarkers(); renderList();
+}
+
+/* ================= curtain compare ================= */
+function syncCmp(){
+  var on=S.cmp && (S.baseId==="wb"||S.baseId==="eox");
+  $("#curtain").classList.toggle("on",on);
+  $("#cmpBtn").classList.toggle("on",on);
+  if(cmpLayer){ map.removeLayer(cmpLayer); cmpLayer=null; }
+  if(!on){ map.getPane("cmpPane").style.clipPath=""; return; }
+  cmpLayer=L.tileLayer(LAYERS[0].url,Object.assign({pane:"cmpPane"},LAYERS[0].o)).addTo(map);
+  applyCmpPct();
+}
+function applyCmpPct(){
+  var p=clamp(S.cmpPct,3,97);
+  map.getPane("cmpPane").style.clipPath="inset(0 0 0 "+p+"%)";
+  $("#cBar").style.left=p+"%";
+  var w=$("#map").clientWidth;
+  $("#cLeft").style.left=Math.max(8,(p/100*w)/2-38)+"px";
+  $("#cRight").style.left=clamp(p/100*w+18,0,w-96)+"px";
+  $("#cLeft").textContent=S.baseId==="wb"?WB[S.relIdx][0]:(S.eoxYear+" 年");
+  $("#cRight").textContent="现在";
+}
+(function cmpDrag(){
+  var grip=$("#cGrip"), dragging=false;
+  function mv(e){ if(!dragging) return;
+    var x=(e.touches?e.touches[0].clientX:e.clientX)-$("#map").getBoundingClientRect().left;
+    S.cmpPct=clamp(x/$("#map").clientWidth*100,3,97); applyCmpPct(); e.preventDefault(); }
+  function up(){ dragging=false; document.body.style.cursor=""; }
+  grip.addEventListener("pointerdown",function(e){ dragging=true; document.body.style.cursor="ew-resize"; e.preventDefault(); });
+  window.addEventListener("pointermove",mv,{passive:false});
+  window.addEventListener("pointerup",up);
+  window.addEventListener("resize",function(){ if(S.cmp) applyCmpPct(); });
+})();
+
+/* ================= markers ================= */
+function coverStyle(p){
+  if(p.cover) return '<span class="im" style="background-image:url('+p.cover+')"></span>';
+  return '<span class="em">'+(p.tags&&p.tags.length?tagEmoji(p.tags[0]):"📍")+'</span>';
+}
+function pinHtml(p,sel,dim){
+  var col=(p.tags&&p.tags.length)?tagColor(p.tags[0]):"#e0a04a";
+  return '<div class="pin'+(sel?" sel":"")+(dim?" dim":"")+'">'+
+    '<div class="bub" style="background:'+col+'">'+coverStyle(p)+'</div>'+
+    (p.title?'<div class="lbl">'+esc(p.title)+'</div>':'')+'</div>';
+}
+function pastDate(){ return S.mode==="past"?(S.baseId==="eox"?(S.eoxYear+"-12-31"):WB[S.relIdx][0]):null; }
+function isFuture(p){
+  if(!S.syncPts||S.mode!=="past") return false;
+  var d=pastDate(); if(!d) return false;
+  var s=p.dateFrom||p.dateTo; if(!s) return false;
+  return String(s).slice(0,10) > d;
+}
+function visible(p){
+  if(S.tags.length){ var hit=(p.tags||[]).some(function(t){ return S.tags.indexOf(t)>=0; }); if(!hit) return false; }
+  var q=S.q.trim().toLowerCase();
+  if(q){
+    var hay=[p.title,p.story,p.place,(p.tags||[]).join(" "),p.dateFrom,p.dateTo].join(" ").toLowerCase();
+    if(hay.indexOf(q)<0) return false;
+  }
+  return true;
+}
+function renderMarkers(){
+  Object.keys(markers).forEach(function(id){ if(!byId(id)||!visible(byId(id))){ map.removeLayer(markers[id]); delete markers[id]; } });
+  S.places.forEach(function(p){
+    if(!visible(p)){ if(markers[p.id]){ map.removeLayer(markers[p.id]); delete markers[p.id]; } return; }
+    var ll=disp(p.lat,p.lng), dim=isFuture(p), sel=S.sel===p.id;
+    var icon=L.divIcon({className:"",html:pinHtml(p,sel,dim),iconSize:[36,36],iconAnchor:[0,0]});
+    if(markers[p.id]){ markers[p.id].setLatLng(ll); markers[p.id].setIcon(icon); }
+    else{
+      var m=L.marker(ll,{icon:icon,riseOnHover:true,zIndexOffset:sel?900:0}).addTo(map);
+      m.on("click",function(){ openDetail(p.id); });
+      markers[p.id]=m;
+    }
+    markers[p.id].setZIndexOffset(sel?900:0);
+  });
+  $("#cnt").textContent=S.places.length;
+}
+
+/* ================= layer panel ================= */
+function renderLayerPanel(){
+  var w=$("#lyrPanel"); w.innerHTML="";
+  var groups=[["wgs","真实坐标 · 卫星/街道"],["gcj","中国地图 · 高德"]];
+  groups.forEach(function(g){
+    w.appendChild(ce("div","grp",g[1]));
+    LAYERS.filter(function(d){ return d.g===g[0]; }).forEach(function(d){
+      var b=ce("button",(S.baseId===d.id?"on":""),
+        '<span class="sw" style="background:'+d.sw+'"></span><span><span>'+esc(d.n)+'</span><br><span style="font-size:10.5px;color:var(--ink3)">'+esc(d.sub)+'</span></span>');
+      b.onclick=function(){ setBase(d.id); if(d.id==="wb"||d.id==="eox"){ setMode("past"); } else if(S.mode==="past") setMode("now"); };
+      w.appendChild(b);
+    });
+  });
+  w.appendChild(ce("div","sep"));
+  var t=ce("div","tog",'<span>地名标注叠加</span>');
+  var sw=ce("span","sws"+(S.labels?" on":""),"<i></i>"); t.appendChild(sw);
+  t.onclick=function(){ S.labels=!S.labels; saveLocal(); syncLabels(); renderLayerPanel(); };
+  if(activeGroup()!=="wgs"){ t.style.opacity=.4; t.onclick=function(){ toast("高德底图自带中文标注"); }; }
+  w.appendChild(t);
+  var loc=ce("button","",'<span class="sw" style="background:#2a3f52;display:flex;align-items:center;justify-content:center">⌖</span><span>定位到我现在的位置</span>');
+  loc.onclick=locateMe; w.appendChild(loc);
+}
+function locateMe(){
+  if(!navigator.geolocation) return toast("这台设备不支持定位");
+  toast("正在定位…");
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var ll=disp(pos.coords.latitude,pos.coords.longitude);
+    map.flyTo(ll,16,{duration:1});
+  },function(){ toast("定位失败，检查浏览器权限"); },{enableHighAccuracy:true,timeout:9000});
+}
+
+/* ================= timeline ================= */
+var relList=WB.map(function(_,i){ return i; });  /* indices into WB currently shown */
+var playTimer=null, tmCache={};
+function setMode(m){
+  S.mode=m;
+  $("#mNow").classList.toggle("on",m==="now");
+  $("#mPast").classList.toggle("on",m==="past");
+  $("#tlBody").classList.toggle("open",m==="past");
+  if(m==="past"){
+    if(S.baseId!=="wb"&&S.baseId!=="eox") setBase("wb");
+  }else{
+    stopPlay(); S.cmp=false;
+    if(S.baseId==="wb"||S.baseId==="eox") setBase("esri"); else syncCmp();
+  }
+  renderTimeline(); renderMarkers(); renderList();
+}
+function renderTimeline(){
+  var yrs=$("#yrs"); 
+  if(S.baseId==="eox"){
+    yrs.innerHTML="";
+    EOX_YEARS.forEach(function(y){
+      var b=ce("button",(S.eoxYear===y?"on":""),y+"");
+      b.onclick=function(){ S.eoxYear=y; buildBase(); renderTimeline(); renderMarkers(); renderList(); };
+      yrs.appendChild(b);
+    });
+    $("#rng").min=0; $("#rng").max=EOX_YEARS.length-1; $("#rng").value=EOX_YEARS.indexOf(S.eoxYear);
+    $("#whenTxt").innerHTML=(S.mode==="now")?"最新影像":('<b>'+S.eoxYear+'</b> 年度无云影像');
+    $("#verInfo").textContent="9 年 · 10 米分辨率";
+    $("#tlNote").textContent="Sentinel-2 年度无云合成，看整片村庄、田地、河道的形状变化最直观（细节较糊）。";
+    $("#onlyChg").style.display="none";
+  }else{
+    if(!yrs.dataset.wb){ yrs.dataset.wb="1"; }
+    var years=[]; WB.forEach(function(r){ var y=r[0].slice(0,4); if(years.indexOf(y)<0) years.push(y); });
+    var curY=WB[S.relIdx][0].slice(0,4);
+    yrs.innerHTML="";
+    years.forEach(function(y){
+      var b=ce("button",(y===curY?"on":""),y);
+      b.onclick=function(){
+        for(var i=0;i<relList.length;i++) if(WB[relList[i]][0].slice(0,4)===y){ gotoPos(i); return; }
+        for(var j=0;j<WB.length;j++) if(WB[j][0].slice(0,4)===y){ S.relIdx=j; refreshWB(); return; }
+      };
+      yrs.appendChild(b);
+    });
+    var pos=relList.indexOf(S.relIdx); if(pos<0) pos=nearestPos(S.relIdx);
+    $("#rng").min=0; $("#rng").max=Math.max(0,relList.length-1); $("#rng").value=pos;
+    var d=WB[S.relIdx][0];
+    $("#whenTxt").innerHTML=(S.mode==="now")?"最新影像":('<b>'+d+'</b> 的影像');
+    $("#verInfo").textContent=relList.length+" 期 · "+WB[relList[0]][0].slice(0,4)+"–"+WB[relList[relList.length-1]][0].slice(0,4);
+    $("#onlyChg").style.display="";
+    $("#tlNote").textContent="Esri Wayback 历史影像存档（0.3–1 米）。拖动滑块回到过去；“只看有变化的版本”会挑出这块地方真正翻新过的年份。";
+  }
+  $("#onlyChg").classList.toggle("on",S.onlyChg);
+  $("#syncPts").classList.toggle("on",S.syncPts);
+  $("#playB").textContent=playTimer?"■":"▶";
+  if(S.cmp) applyCmpPct();
+}
+function nearestPos(idx){
+  var best=0,bd=1e9;
+  relList.forEach(function(v,i){ var d=Math.abs(v-idx); if(d<bd){bd=d;best=i;} });
+  return best;
+}
+function gotoPos(pos){
+  pos=clamp(pos,0,relList.length-1);
+  S.relIdx=relList[pos]; refreshWB();
+}
+function refreshWB(){ buildBase(); renderTimeline(); renderMarkers(); renderList(); }
+function stopPlay(){ if(playTimer){ clearInterval(playTimer); playTimer=null; $("#playB").textContent="▶"; } }
+function togglePlay(){
+  if(playTimer) return stopPlay();
+  if(S.baseId==="eox"){
+    var i=EOX_YEARS.indexOf(S.eoxYear);
+    playTimer=setInterval(function(){ i=(i+1)%EOX_YEARS.length; S.eoxYear=EOX_YEARS[i]; buildBase(); renderTimeline(); renderMarkers(); },1400);
+  }else{
+    var pos=relList.indexOf(S.relIdx); if(pos<0) pos=nearestPos(S.relIdx);
+    playTimer=setInterval(function(){ pos=(pos+1)%relList.length; gotoPos(pos); },1300);
+  }
+  $("#playB").textContent="■";
+}
+/* which releases actually changed at this spot (Wayback tilemap byte-size trick) */
+function refineChanged(){
+  var c=map.getCenter(), z=clamp(Math.round(map.getZoom()),13,17);
+  if(activeGroup()==="gcj"){ var w=gcj2wgs(c.lat,c.lng); c={lat:w[0],lng:w[1]}; }
+  var t=ll2tile(c.lat,c.lng,z), key=z+"/"+t[0]+"/"+t[1];
+  if(tmCache[key]){ applyChanged(tmCache[key]); return; }
+  var done=0, sizes=new Array(WB.length), i=0, fail=0;
+  $("#verInfo").textContent="扫描中 0/"+WB.length;
+  function next(){
+    if(i>=WB.length) return;
+    var k=i++;
+    fetch("https://wayback-a.maptiles.arcgis.com/arcgis/rest/services/world_imagery/wmts/1.0.0/default028mm/MapServer/tilemap/"+WB[k][1]+"/"+z+"/"+t[1]+"/"+t[0])
+      .then(function(r){ return r.json(); })
+      .then(function(j){ sizes[k]=(j&&j.size&&j.size[0])||0; })
+      .catch(function(){ sizes[k]=-1; fail++; })
+      .then(function(){
+        done++; if(done%8===0) $("#verInfo").textContent="扫描中 "+done+"/"+WB.length;
+        if(done===WB.length){
+          if(fail>WB.length*0.4){ toast("影像扫描失败，改为显示全部版本"); S.onlyChg=false; renderTimeline(); return; }
+          var keep=[],last=null;
+          for(var n=0;n<WB.length;n++){ var s=sizes[n]; if(s<=0) continue; if(s!==last){ keep.push(n); last=s; } }
+          if(keep.length<2) keep=WB.map(function(_,n){ return n; });
+          tmCache[key]=keep; applyChanged(keep);
+        } else next();
+      });
+  }
+  for(var c2=0;c2<6;c2++) next();
+}
+function applyChanged(keep){
+  relList=keep.slice();
+  if(relList.indexOf(S.relIdx)<0) S.relIdx=relList[nearestPos(S.relIdx)];
+  renderTimeline(); toast("这块地方共有 "+relList.length+" 个不同的影像版本");
+}
+function resetChanged(){ relList=WB.map(function(_,i){ return i; }); renderTimeline(); }
+
+/* ================= list ================= */
+function sortPlaces(a,b){
+  var da=(a.dateFrom||a.dateTo||""), db=(b.dateFrom||b.dateTo||"");
+  if(da&&db&&da!==db) return db<da?-1:1;
+  if(da&&!db) return -1;
+  if(!da&&db) return 1;
+  return (b.createdAt||0)-(a.createdAt||0);
+}
+function renderList(){
+  var box=$("#list"); box.innerHTML="";
+  var arr=S.places.filter(visible).sort(sortPlaces);
+  if(!S.places.length){
+    box.appendChild(ce("div","empty","还没有回忆点。<br>点右下角「＋ 标记回忆」，<br>在地图上按下你记得的那个地方。"));
+  }else if(!arr.length){
+    box.appendChild(ce("div","empty","没有匹配的回忆。<br>换个词，或取消标签筛选。"));
+  }
+  arr.forEach(function(p){
+    var dim=isFuture(p);
+    var c=ce("div","card"+(S.sel===p.id?" act":"")+(dim?" dim":""));
+    var th=ce("div","th"); 
+    if(p.cover){ th.style.backgroundImage="url("+p.cover+")"; } else { th.textContent=(p.tags&&p.tags.length)?tagEmoji(p.tags[0]):"📍"; }
+    var bd=ce("div","bd");
+    bd.appendChild(ce("div","t",esc(p.title||"未命名回忆")));
+    var meta=[fmtRange(p.dateFrom,p.dateTo),p.place].filter(Boolean).join(" · ");
+    bd.appendChild(ce("div","m",esc(meta||"—")+(p.photoCount?'　📷'+p.photoCount:"")));
+    if(p.story) bd.appendChild(ce("div","s",esc(p.story)));
+    if(p.tags&&p.tags.length){
+      var tw=ce("div","tgs");
+      p.tags.forEach(function(t){ var i=ce("i",null,esc(t)); i.style.color=tagColor(t); tw.appendChild(i); });
+      bd.appendChild(tw);
+    }
+    c.appendChild(th); c.appendChild(bd);
+    c.onclick=function(){ openDetail(p.id); flyTo(p); };
+    box.appendChild(c);
+  });
+  var yrs={}; S.places.forEach(function(p){ var y=yearOf(p.dateFrom); if(y) yrs[y]=1; });
+  var ky=Object.keys(yrs).sort();
+  $("#statLine").textContent=S.places.length+" 个地方"+(ky.length?(" · "+ky[0]+"–"+ky[ky.length-1]):"");
+  renderTagBar();
+}
+function renderTagBar(){
+  var used={}; S.places.forEach(function(p){ (p.tags||[]).forEach(function(t){ used[t]=(used[t]||0)+1; }); });
+  var keys=TAGS.map(function(t){ return t.k; }).filter(function(k){ return used[k]; });
+  Object.keys(used).forEach(function(k){ if(keys.indexOf(k)<0) keys.push(k); });
+  var bar=$("#tagbar"); bar.innerHTML="";
+  keys.forEach(function(k){
+    var on=S.tags.indexOf(k)>=0, col=tagColor(k);
+    var b=ce("button","tg"+(on?" on":""),'<span class="d" style="background:'+(on?"#1a1512":col)+'"></span>'+esc(k)+' '+used[k]);
+    if(on) b.style.background=col;
+    b.onclick=function(){ var i=S.tags.indexOf(k); if(i<0)S.tags.push(k); else S.tags.splice(i,1); renderMarkers(); renderList(); };
+    bar.appendChild(b);
+  });
+  bar.style.display=keys.length?"flex":"none";
+}
+function flyTo(p){ var ll=disp(p.lat,p.lng); map.flyTo(ll,Math.max(map.getZoom(),16),{duration:.85}); }
+
+/* ================= sheet: detail ================= */
+function openSheet(){
+  $("#sheet").classList.add("open");
+  if(window.innerWidth<=640){ $("#drawer").classList.add("hide"); $("#listBtn").classList.remove("on"); }
+}
+function closeSheet(){ $("#sheet").classList.remove("open"); S.sel=null; renderMarkers(); renderList(); }
+function openDetail(id){
+  var p=byId(id); if(!p) return;
+  S.sel=id; renderMarkers(); renderList();
+  $("#shTitle").textContent=p.title||"未命名回忆";
+  var bd=$("#shBody"); bd.innerHTML="";
+  var meta=ce("div","meta");
+  var mr=fmtRange(p.dateFrom,p.dateTo); if(mr) meta.appendChild(ce("i",null,"🕰 "+esc(mr)));
+  if(p.place) meta.appendChild(ce("i",null,"📍 "+esc(p.place)));
+  (p.tags||[]).forEach(function(t){ var i=ce("i",null,tagEmoji(t)+" "+esc(t)); i.style.color=tagColor(t); meta.appendChild(i); });
+  bd.appendChild(meta);
+  var ph=ce("div","ph-grid"); ph.id="detPh"; bd.appendChild(ph);
+  if(p.photoCount) ph.innerHTML='<div class="empty" style="grid-column:1/-1;padding:14px">照片加载中…</div>';
+  var st=ce("div","story",esc(p.story||"（还没写下什么）")); st.style.marginTop="13px"; bd.appendChild(st);
+  var gps=ce("div","hint","坐标 "+p.lat.toFixed(6)+", "+p.lng.toFixed(6)+"（WGS-84）"); gps.style.marginTop="14px"; bd.appendChild(gps);
+  var ft=$("#shFoot"); ft.innerHTML="";
+  var b1=ce("button","btn","看这里的过去"); b1.onclick=function(){ flyTo(p); setMode("past"); setBase("wb"); toast("拖底部滑块回到过去"); };
+  var b2=ce("button","btn p","编辑"); b2.onclick=function(){ openEditor(p.id); };
+  ft.appendChild(b1); ft.appendChild(b2);
+  openSheet();
+  if(p.photoCount){
+    loadPhotos(p.id).then(function(list){
+      if(S.sel!==p.id) return;
+      ph.innerHTML="";
+      if(!list.length){ ph.innerHTML='<div class="empty" style="grid-column:1/-1;padding:12px">照片在另一台设备上，解锁云同步后可见</div>'; return; }
+      list.forEach(function(x,i){
+        var d=ce("div","ph",'<img src="'+x.img+'" alt="">');
+        d.onclick=function(){ lightbox(list,i,p.title); };
+        ph.appendChild(d);
+      });
+    });
+  }
+}
+
+/* ================= sheet: editor ================= */
+var ed=null; /* editing buffer */
+function openEditor(id,pos){
+  var p=id?byId(id):null;
+  ed={ id:id||uid(), isNew:!p,
+       lat:p?p.lat:pos[0], lng:p?p.lng:pos[1],
+       title:p?(p.title||""):"", story:p?(p.story||""):"",
+       dateFrom:p?(p.dateFrom||""):"", dateTo:p?(p.dateTo||""):"",
+       tags:p?(p.tags||[]).slice():[], place:p?(p.place||""):"",
+       photos:[], removed:[] , cover:p?(p.cover||""):"" };
+  $("#shTitle").textContent=p?"编辑回忆":"新的回忆";
+  drawEditor();
+  openSheet();
+  if(p&&p.photoCount){ loadPhotos(p.id).then(function(l){ if(ed&&ed.id===p.id){ ed.photos=l.slice(); drawEditor(); } }); }
+  if(!p) reverseGeo(ed.lat,ed.lng);
+}
+function drawEditor(){
+  var bd=$("#shBody"); bd.innerHTML="";
+  var f1=ce("div","f",'<label>这是什么地方 / 发生了什么</label>');
+  var i1=ce("input"); i1.type="text"; i1.value=ed.title; i1.placeholder="比如：老家的院子";
+  i1.oninput=function(){ ed.title=i1.value; }; f1.appendChild(i1); bd.appendChild(f1);
+
+  var f2=ce("div","f",'<label>时间（可以只写年份，或写一段时间）</label>');
+  var row=ce("div","row");
+  var d1=ce("input"); d1.type="text"; d1.value=ed.dateFrom; d1.placeholder="1998 或 1998-06";
+  var mid=ce("span",null,"至"); mid.style.color="var(--ink3)"; mid.style.flex="0 0 auto";
+  var d2=ce("input"); d2.type="text"; d2.value=ed.dateTo; d2.placeholder="留空=同一天";
+  d1.oninput=function(){ ed.dateFrom=normDate(d1.value); }; d2.oninput=function(){ ed.dateTo=normDate(d2.value); };
+  row.appendChild(d1); row.appendChild(mid); row.appendChild(d2); f2.appendChild(row);
+  f2.appendChild(ce("div","hint","支持 1998 / 1998-06 / 1998-06-12 三种写法")); bd.appendChild(f2);
+
+  var f3=ce("div","f",'<label>标签</label>');
+  var tw=ce("div","tagbar"); tw.style.marginTop="0";
+  var keys=TAGS.map(function(t){return t.k;});
+  S.places.forEach(function(p){ (p.tags||[]).forEach(function(t){ if(keys.indexOf(t)<0) keys.push(t); }); });
+  ed.tags.forEach(function(t){ if(keys.indexOf(t)<0) keys.push(t); });
+  keys.forEach(function(k){
+    var on=ed.tags.indexOf(k)>=0, col=tagColor(k);
+    var b=ce("button","tg"+(on?" on":""),'<span class="d" style="background:'+(on?"#1a1512":col)+'"></span>'+esc(k));
+    if(on) b.style.background=col;
+    b.onclick=function(){ var i=ed.tags.indexOf(k); if(i<0)ed.tags.push(k); else ed.tags.splice(i,1); drawEditor(); };
+    tw.appendChild(b);
+  });
+  var add=ce("button","tg","＋ 自定义");
+  add.onclick=function(){ var v=prompt("新标签名"); if(v&&v.trim()){ var t=v.trim().slice(0,8); if(ed.tags.indexOf(t)<0) ed.tags.push(t); drawEditor(); } };
+  tw.appendChild(add); f3.appendChild(tw); bd.appendChild(f3);
+
+  var f4=ce("div","f",'<label>故事</label>');
+  var ta=ce("textarea"); ta.value=ed.story; ta.placeholder="在这里发生过什么？谁在场？现在还在吗？";
+  ta.oninput=function(){ ed.story=ta.value; }; f4.appendChild(ta); bd.appendChild(f4);
+
+  var f5=ce("div","f",'<label>照片 '+(ed.photos.length?("· "+ed.photos.length+" 张"):"")+'</label>');
+  var g=ce("div","ph-grid");
+  ed.photos.forEach(function(x,i){
+    var d=ce("div","ph",'<img src="'+x.img+'" alt=""><span class="rm">✕</span>');
+    d.querySelector(".rm").onclick=function(e){ e.stopPropagation(); ed.removed.push(x.id); ed.photos.splice(i,1); drawEditor(); };
+    d.onclick=function(){ lightbox(ed.photos,i,ed.title); };
+    g.appendChild(d);
+  });
+  var ad=ce("div","ph add","＋"); ad.onclick=pickFiles; g.appendChild(ad);
+  f5.appendChild(g);
+  f5.appendChild(ce("div","hint","照片会压到 1400px 存进你自己的云端库，原图不上传。"));
+  bd.appendChild(f5);
+
+  var f6=ce("div","f",'<label>位置</label>');
+  f6.appendChild(ce("div","hint","当前：<b style='color:var(--ink2)'>"+ed.lat.toFixed(6)+", "+ed.lng.toFixed(6)+"</b>"));
+  var mv=ce("button","btn","在地图上重新选点"); mv.style.marginTop="8px"; mv.style.width="100%";
+  mv.onclick=function(){ startPick(function(lat,lng){ ed.lat=lat; ed.lng=lng; reverseGeo(lat,lng); drawEditor(); openSheet(); }); toast("点地图选新位置"); };
+  f6.appendChild(mv);
+  var pl=ce("input"); pl.type="text"; pl.value=ed.place; pl.placeholder="地点名（自动填写，可改）"; pl.style.marginTop="8px";
+  pl.oninput=function(){ ed.place=pl.value; }; pl.id="edPlace"; f6.appendChild(pl);
+  bd.appendChild(f6);
+
+  var ft=$("#shFoot"); ft.innerHTML="";
+  if(!ed.isNew){ var del=ce("button","btn d","🗑"); del.onclick=function(){ askDelete(ed.id); }; ft.appendChild(del); }
+  var cc=ce("button","btn","取消"); cc.onclick=function(){ cancelEdit(); };
+  var sv=ce("button","btn p","保存"); sv.onclick=saveEdit;
+  ft.appendChild(cc); ft.appendChild(sv);
+}
+function normDate(v){
+  v=String(v||"").trim().replace(/[年月]/g,"-").replace(/日/g,"").replace(/\//g,"-").replace(/-+$/,"");
+  if(/^\d{4}$/.test(v)) return v;
+  if(/^\d{4}-\d{1,2}$/.test(v)){ var a=v.split("-"); return a[0]+"-"+("0"+a[1]).slice(-2); }
+  if(/^\d{4}-\d{1,2}-\d{1,2}$/.test(v)){ var b=v.split("-"); return b[0]+"-"+("0"+b[1]).slice(-2)+"-"+("0"+b[2]).slice(-2); }
+  return v;
+}
+function cancelEdit(){
+  var was=ed; ed=null; clearDraft();
+  if(was&&!was.isNew) openDetail(was.id); else closeSheet();
+}
+function saveEdit(){
+  if(!ed) return;
+  if(pendingPhotos>0){ toast("照片还在处理，等一下再保存"); return; }
+  if(!ed.title.trim()&&!ed.story.trim()){ toast("至少写个标题或一句话"); return; }
+  var old=byId(ed.id);
+  var p=old||{id:ed.id,createdAt:Date.now()};
+  p.lat=ed.lat; p.lng=ed.lng;
+  p.title=ed.title.trim(); p.story=ed.story.trim();
+  p.dateFrom=ed.dateFrom; p.dateTo=ed.dateTo;
+  p.tags=ed.tags.slice(); p.place=(($("#edPlace")||{}).value||ed.place||"").trim();
+  p.photoCount=ed.photos.length;
+  var first=ed.photos.length?ed.photos[0]:null;
+  p.cover=first?(first.thumb||""):"";
+  p.updatedAt=Date.now();
+  if(!old) S.places.push(p);
+  var newPhotos=ed.photos.filter(function(x){ return x._new; });
+  var removed=ed.removed.slice();
+  var pid=p.id;
+  saveLocal(); renderMarkers(); renderList(); clearDraft();
+  pushPlace(p);
+  newPhotos.forEach(function(x){ x._new=false; x.placeId=pid; idbPut(x); pushPhoto(x); });
+  removed.forEach(function(id){ idbDel(id); delPhotoCloud(id); });
+  photoCache[pid]=ed.photos.slice();
+  if(first&&!first.thumb){
+    thumbFromDataURL(first.img,220).then(function(t){
+      if(!t) return; first.thumb=t; idbPut(first);
+      var q=byId(pid); if(!q) return; q.cover=t; saveLocal(); pushPlace(q); renderMarkers(); renderList();
+    });
+  }
+  ed=null;
+  openDetail(pid);
+  toast(old?"已更新":"回忆已记下");
+}
+function askDelete(id){
+  var p=byId(id); if(!p) return;
+  modal("删掉这个回忆？","<p style='margin:0;font-size:13px;line-height:1.8;color:var(--ink2)'>「"+esc(p.title||"未命名")+"」连同 "+(p.photoCount||0)+" 张照片会从地图和云端一起消失，这一步没法撤回。</p>",
+    [{t:"再想想",f:closeModal},{t:"删除",p:true,f:function(){
+      S.places=S.places.filter(function(x){ return x.id!==id; });
+      if(markers[id]){ map.removeLayer(markers[id]); delete markers[id]; }
+      idbByPlace(id).then(function(l){ l.forEach(function(x){ idbDel(x.id); }); });
+      delete photoCache[id];
+      saveLocal(); delPlaceCloud(id);
+      ed=null; closeModal(); closeSheet(); renderMarkers(); renderList(); toast("已删除");
+    }}]);
+}
+
+/* ================= photos ================= */
+function pickFiles(){ $("#fileIn").value=""; $("#fileIn").click(); }
+var pendingPhotos=0;
+$("#fileIn").onchange=function(e){
+  var files=Array.prototype.slice.call(e.target.files||[]);
+  if(!files.length||!ed) return;
+  var owner=ed.id;
+  toast("处理 "+files.length+" 张照片…");
+  var seq=Promise.resolve(), okN=0, badN=0;
+  files.slice(0,20).forEach(function(f){
+    pendingPhotos++;
+    seq=seq.then(function(){ return compress(f); }).then(function(r){
+      if(!r) return;
+      var ph={ id:"ph-"+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
+        placeId:owner, img:r.img, thumb:r.thumb, name:f.name||"", w:r.w, h:r.h, createdAt:Date.now(), _new:true };
+      okN++;
+      if(ed&&ed.id===owner){ ed.photos.push(ph); drawEditor(); }
+      else attachLate(owner,ph);          /* editor already closed: don't lose the photo */
+    }).catch(function(err){ badN++; console.warn("photo fail",err); })
+      .then(function(){ pendingPhotos--; });
+  });
+  seq.then(function(){
+    if(badN) toast(badN+" 张照片读不出来（格式不支持？）");
+    if(okN) toast(ed?"照片就位，别忘了保存":"照片已直接存入这个回忆");
+  });
+};
+function attachLate(pid,ph){
+  var p=byId(pid); if(!p) return;
+  ph._new=false; idbPut(ph); pushPhoto(ph);
+  var list=photoCache[pid]||[]; list.push(ph); photoCache[pid]=list;
+  p.photoCount=(p.photoCount||0)+1;
+  if(!p.cover&&ph.thumb) p.cover=ph.thumb;
+  p.updatedAt=Date.now(); saveLocal(); pushPlace(p); renderMarkers(); renderList();
+  if(S.sel===pid&&!ed) openDetail(pid);
+}
+function compress(file){
+  return loadBitmap(file).then(function(src){
+    var big=draw(src,1400,.8), small=draw(src,220,.72);
+    if(src.close) src.close();
+    return { img:big.url, thumb:small.url, w:big.w, h:big.h };
+  });
+}
+function loadBitmap(file){
+  if(!window.createImageBitmap) return viaImg(file);
+  var done=false;
+  var fast=new Promise(function(res,rej){
+    var p;
+    try{ p=createImageBitmap(file,{imageOrientation:"from-image"}); }catch(e){ rej(e); return; }
+    p.then(function(b){ done=true; res(b); },function(e){ rej(e); });
+  });
+  var guard=new Promise(function(res,rej){
+    setTimeout(function(){ if(!done) rej(new Error("bitmap timeout")); },2500);
+  });
+  return Promise.race([fast,guard]).catch(function(){ return viaImg(file); });
+}
+function viaImg(file){
+  return new Promise(function(res,rej){
+    var u=URL.createObjectURL(file), im=new Image();
+    im.onload=function(){ res(im); };
+    im.onerror=function(){ URL.revokeObjectURL(u); rej(new Error("bad image")); };
+    im.src=u;
+  });
+}
+function thumbFromDataURL(u,max){
+  return new Promise(function(res){
+    var im=new Image();
+    im.onload=function(){ try{ res(draw(im,max||220,.72).url); }catch(e){ res(""); } };
+    im.onerror=function(){ res(""); };
+    im.src=u;
+  });
+}
+function draw(src,max,q){
+  var w=src.width||src.naturalWidth, h=src.height||src.naturalHeight;
+  var s=Math.min(1,max/Math.max(w,h));
+  var cw=Math.max(1,Math.round(w*s)), ch=Math.max(1,Math.round(h*s));
+  var cv=document.createElement("canvas"); cv.width=cw; cv.height=ch;
+  var cx=cv.getContext("2d"); cx.fillStyle="#000"; cx.fillRect(0,0,cw,ch); cx.drawImage(src,0,0,cw,ch);
+  return { url:cv.toDataURL("image/jpeg",q), w:cw, h:ch };
+}
+/* lightbox */
+var lbList=[],lbIdx=0;
+function lightbox(list,i,cap){
+  lbList=list; lbIdx=i; $("#lb").classList.add("on"); lbShow(cap||"");
+}
+function lbShow(cap){
+  var x=lbList[lbIdx]; if(!x) return;
+  $("#lbImg").src=x.img;
+  $("#lbCap").textContent=(cap?cap+"　":"")+(lbIdx+1)+" / "+lbList.length;
+  $("#lbPrev").style.display=$("#lbNext").style.display=lbList.length>1?"flex":"none";
+}
+$("#lbClose").onclick=function(){ $("#lb").classList.remove("on"); $("#lbImg").src=""; };
+$("#lbPrev").onclick=function(){ lbIdx=(lbIdx-1+lbList.length)%lbList.length; lbShow($("#lbCap").textContent.split("　")[0]); };
+$("#lbNext").onclick=function(){ lbIdx=(lbIdx+1)%lbList.length; lbShow($("#lbCap").textContent.split("　")[0]); };
+$("#lb").onclick=function(e){ if(e.target.id==="lb") $("#lbClose").click(); };
+
+/* ================= pick / draft ================= */
+var pickCb=null;
+function startPick(cb){
+  pickCb=cb||null;
+  document.body.classList.add("picking");
+  $("#map").style.cursor="crosshair";
+  $("#tip").classList.add("on");
+  $("#fab").classList.add("on"); $("#fabTxt").textContent="取消";
+}
+function stopPick(){
+  pickCb=null; $("#map").style.cursor=""; $("#tip").classList.remove("on");
+  $("#fab").classList.remove("on"); $("#fabTxt").textContent="标记回忆";
+}
+function clearDraft(){ if(draft){ map.removeLayer(draft.m); draft=null; } }
+map.on("click",function(e){
+  if(!pickCb&&!$("#tip").classList.contains("on")) return;
+  var w=undisp(e.latlng.lat,e.latlng.lng);
+  var cb=pickCb; stopPick();
+  clearDraft();
+  var dm=L.marker(e.latlng,{icon:L.divIcon({className:"",html:'<div class="draft"></div>',iconSize:[24,24],iconAnchor:[0,0]}),draggable:true,zIndexOffset:1200}).addTo(map);
+  draft={m:dm};
+  dm.on("dragend",function(){
+    var ll=dm.getLatLng(), ww=undisp(ll.lat,ll.lng);
+    if(ed){ ed.lat=ww[0]; ed.lng=ww[1]; reverseGeo(ww[0],ww[1]); drawEditor(); }
+  });
+  if(cb) cb(w[0],w[1]); else openEditor(null,[w[0],w[1]]);
+});
+
+/* ================= geocode ================= */
+var geoBox=$("#geo");
+function reverseGeo(lat,lng){
+  fetch("https://photon.komoot.io/reverse?lat="+lat+"&lon="+lng+"&limit=1&lang=default")
+    .then(function(r){ return r.json(); }).then(function(j){
+      var f=(j.features||[])[0]; if(!f||!ed) return;
+      var pr=f.properties||{};
+      var nm=[pr.name,pr.district||pr.city,pr.state].filter(Boolean).join("·");
+      if(nm&&!ed.place){ ed.place=nm; var el=$("#edPlace"); if(el&&!el.value) el.value=nm; }
+    }).catch(function(){});
+}
+var doGeo=debounce(function(q){
+  if(!q||q.length<2){ geoBox.classList.remove("open"); return; }
+  var m=q.match(/^\s*(-?\d+(?:\.\d+)?)\s*[,，]\s*(-?\d+(?:\.\d+)?)\s*$/);
+  if(m){
+    var a=parseFloat(m[1]), b=parseFloat(m[2]);
+    var lat=Math.abs(a)<=90?a:b, lng=Math.abs(a)<=90?b:a;
+    geoBox.innerHTML=""; var it=ce("div","it","<b>跳到坐标 "+lat+", "+lng+"</b><span>按 WGS-84 定位</span>");
+    it.onclick=function(){ map.flyTo(disp(lat,lng),16,{duration:.9}); geoBox.classList.remove("open"); };
+    geoBox.appendChild(it); geoBox.classList.add("open"); return;
+  }
+  fetch("https://photon.komoot.io/api/?limit=6&lang=default&q="+encodeURIComponent(q))
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      var fs=j.features||[];
+      if(!fs.length){ geoBox.classList.remove("open"); return; }
+      geoBox.innerHTML="";
+      fs.forEach(function(f){
+        var pr=f.properties||{}, c=f.geometry.coordinates;
+        var name=pr.name||pr.street||pr.city||"未命名";
+        var sub=[pr.street,pr.district,pr.city,pr.state,pr.country].filter(Boolean).join(" · ");
+        var it=ce("div","it","<b>"+esc(name)+"</b><span>"+esc(sub)+"</span>");
+        it.onclick=function(){
+          map.flyTo(disp(c[1],c[0]),15,{duration:1});
+          geoBox.classList.remove("open");
+        };
+        geoBox.appendChild(it);
+      });
+      geoBox.classList.add("open");
+    }).catch(function(){ geoBox.classList.remove("open"); });
+},420);
+
+/* ================= modal / setup ================= */
+function modal(title,html,btns){
+  $("#mTitle").textContent=title; $("#mBody").innerHTML=html;
+  var ft=$("#mFoot"); ft.innerHTML="";
+  (btns||[{t:"好",f:closeModal}]).forEach(function(b){
+    var e=ce("button","btn"+(b.p?" p":""),esc(b.t)); e.onclick=b.f; ft.appendChild(e);
+  });
+  $("#modal").classList.add("on");
+}
+function closeModal(){ $("#modal").classList.remove("on"); }
+$("#mClose").onclick=closeModal;
+$("#modal").onclick=function(e){ if(e.target.id==="modal") closeModal(); };
+
+var SETUP_SQL=
+"-- 回忆地图：在 Supabase → SQL Editor 里整段粘贴运行一次即可\n"+
+"create table if not exists public.memory_places (\n"+
+"  id text primary key,\n"+
+"  lat double precision not null,\n"+
+"  lng double precision not null,\n"+
+"  data jsonb not null default '{}'::jsonb,\n"+
+"  created_at timestamptz not null default now(),\n"+
+"  updated_at timestamptz not null default now()\n"+
+");\n"+
+"create table if not exists public.memory_photos (\n"+
+"  id text primary key,\n"+
+"  place_id text not null,\n"+
+"  data jsonb not null default '{}'::jsonb,\n"+
+"  created_at timestamptz not null default now()\n"+
+");\n"+
+"create index if not exists memory_photos_place_idx on public.memory_photos(place_id);\n"+
+"alter table public.memory_places enable row level security;\n"+
+"alter table public.memory_photos enable row level security;\n"+
+"drop policy if exists memory_places_secret on public.memory_places;\n"+
+"create policy memory_places_secret on public.memory_places for all to anon, authenticated\n"+
+"  using (coalesce(public.verify_expense_secret(), false))\n"+
+"  with check (coalesce(public.verify_expense_secret(), false));\n"+
+"drop policy if exists memory_photos_secret on public.memory_photos;\n"+
+"create policy memory_photos_secret on public.memory_photos for all to anon, authenticated\n"+
+"  using (coalesce(public.verify_expense_secret(), false))\n"+
+"  with check (coalesce(public.verify_expense_secret(), false));\n"+
+"notify pgrst, 'reload schema';";
+
+function syncPanel(){
+  if(!S.secret){
+    modal("解锁云同步",
+      '<div class="crd"><h4>输入你那串共用密钥</h4><p>和记账站、组织架构站是同一把钥匙。不解锁也能用，数据只存在这台设备。</p></div>'+
+      '<div class="f"><label>密钥</label><input type="text" id="secIn" placeholder="粘贴 x-app-secret" autocomplete="off"></div>',
+      [{t:"先本地用",f:closeModal},{t:"解锁",p:true,f:function(){
+        var v=($("#secIn").value||"").trim(); if(!v) return;
+        setSync("busy");
+        fetch(SB_URL+"/rest/v1/rpc/verify_expense_secret",{method:"POST",
+          headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"x-app-secret":v,"Content-Type":"application/json"},body:"{}"})
+          .then(function(r){ return r.json(); })
+          .then(function(ok){
+            if(ok===true){ S.secret=v; localStorage.setItem(LS_SECRET,v); closeModal(); toast("已解锁"); bootstrapCloud(); }
+            else { setSync("locked"); toast("密钥不对"); }
+          }).catch(function(){ setSync("offline"); toast("连不上云端"); });
+      }}]);
+    return;
+  }
+  if(S.cloud==="needsetup"){ setupModal(); return; }
+  modal("云同步",
+    '<div class="crd"><h4>状态：'+esc($("#syncTxt").textContent)+'</h4><p>共 '+S.places.length+' 个回忆点。数据存在你自己的 Supabase 里，浏览器同时留一份离线缓存。</p></div>'+
+    '<div class="hint">换设备打开这个网址、输入同一把密钥，回忆就都在。</div>',
+    [{t:"退出解锁",f:function(){ S.secret=""; localStorage.removeItem(LS_SECRET); setSync("locked"); closeModal(); toast("已退出云同步，本地数据保留"); }},
+     {t:"重新同步",p:true,f:function(){ closeModal(); bootstrapCloud(); }}]);
+}
+function setupModal(){
+  modal("云端还差一步",
+    '<div class="crd"><h4>建两张表就好</h4><p>复制下面这段 SQL，去 Supabase 控制台的 SQL Editor 粘贴运行一次。之后所有设备就都能看到同一份回忆了。</p></div>'+
+    '<div class="sql" id="sqlBox">'+esc(SETUP_SQL)+'</div>'+
+    '<div class="hint">运行完回来点「我建好了」。在此之前照片和回忆都只存在这台设备上。</div>',
+    [{t:"复制 SQL",f:function(){ copyText(SETUP_SQL); }},{t:"我建好了",p:true,f:function(){ closeModal(); bootstrapCloud(); }}]);
+}
+var setupShown=false;
+function promptSetup(){
+  if(setupShown) return; setupShown=true;
+  var tries=0;
+  (function wait(){
+    if(S.cloud!=="needsetup") return;
+    if(!$("#modal").classList.contains("on")) return setupModal();
+    if(++tries>50) return;
+    setTimeout(wait,600);
+  })();
+}
+function copyText(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){ toast("已复制"); },function(){ fallbackCopy(t); }); }
+  else fallbackCopy(t);
+}
+function fallbackCopy(t){
+  var ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); toast("已复制"); }catch(e){ toast("请手动复制"); }
+  ta.remove();
+}
+
+/* ================= export / import ================= */
+function doExport(){
+  toast("打包中…");
+  idbAll().then(function(photos){
+    var blob=new Blob([JSON.stringify({app:"memory-map",v:1,exportedAt:new Date().toISOString(),places:S.places,photos:photos},null,1)],{type:"application/json"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="回忆地图备份-"+new Date().toISOString().slice(0,10)+".json";
+    a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); },2000);
+    toast("已导出 "+S.places.length+" 个地点 / "+photos.length+" 张照片");
+  });
+}
+$("#jsonIn").onchange=function(e){
+  var f=(e.target.files||[])[0]; if(!f) return;
+  var fr=new FileReader();
+  fr.onload=function(){
+    try{
+      var d=JSON.parse(fr.result);
+      var ps=d.places||[], phs=d.photos||[], add=0, upd=0;
+      ps.forEach(function(p){
+        if(!p||!p.id||!isFinite(p.lat)||!isFinite(p.lng)) return;
+        var old=byId(p.id);
+        if(!old){ S.places.push(p); add++; }
+        else if((p.updatedAt||0)>(old.updatedAt||0)){ Object.assign(old,p); upd++; }
+      });
+      phs.forEach(function(x){ if(x&&x.id&&x.img){ idbPut(x); pushPhoto(x); } });
+      saveLocal(); renderAll();
+      S.places.forEach(pushPlace);
+      toast("导入完成：新增 "+add+"，更新 "+upd);
+    }catch(err){ toast("文件读不出来"); }
+  };
+  fr.readAsText(f);
+  e.target.value="";
+};
+
+/* ================= wiring ================= */
+$("#listBtn").onclick=function(){ var d=$("#drawer"); d.classList.toggle("hide"); $("#listBtn").classList.toggle("on",!d.classList.contains("hide")); };
+$("#lyrBtn").onclick=function(){ var p=$("#lyrPanel"); p.classList.toggle("open"); $("#lyrBtn").classList.toggle("on",p.classList.contains("open")); };
+$("#syncChip").onclick=syncPanel;
+$("#shClose").onclick=function(){ if(ed) cancelEdit(); else closeSheet(); };
+$("#fab").onclick=function(){
+  if($("#tip").classList.contains("on")){ stopPick(); return; }
+  startPick(null);
+  if(window.innerWidth<=640) $("#drawer").classList.add("hide");
+};
+$("#mNow").onclick=function(){ setMode("now"); };
+$("#mPast").onclick=function(){ setMode("past"); };
+$("#cmpBtn").onclick=function(){
+  if(S.mode!=="past"){ setMode("past"); }
+  S.cmp=!S.cmp; syncCmp(); if(S.cmp) toast("拖动中间圆点：左边过去，右边现在");
+};
+$("#rng").oninput=function(){
+  if(S.baseId==="eox"){ S.eoxYear=EOX_YEARS[+this.value]; buildBase(); renderTimeline(); renderMarkers(); renderList(); }
+  else gotoPos(+this.value);
+};
+$("#prevB").onclick=function(){ stopPlay(); step(-1); };
+$("#nextB").onclick=function(){ stopPlay(); step(1); };
+function step(d){
+  if(S.baseId==="eox"){ var i=clamp(EOX_YEARS.indexOf(S.eoxYear)+d,0,EOX_YEARS.length-1); S.eoxYear=EOX_YEARS[i]; buildBase(); renderTimeline(); renderMarkers(); renderList(); }
+  else { var pos=relList.indexOf(S.relIdx); if(pos<0) pos=nearestPos(S.relIdx); gotoPos(pos+d); }
+}
+$("#playB").onclick=togglePlay;
+$("#onlyChg").onclick=function(){
+  S.onlyChg=!S.onlyChg;
+  if(S.onlyChg) refineChanged(); else resetChanged();
+  renderTimeline();
+};
+$("#syncPts").onclick=function(){ S.syncPts=!S.syncPts; renderTimeline(); renderMarkers(); renderList(); };
+$("#q").oninput=function(){ S.q=this.value; $("#qx").style.display=this.value?"block":"none"; renderMarkers(); renderList(); doGeo(this.value); };
+$("#qx").onclick=function(){ $("#q").value=""; S.q=""; this.style.display="none"; geoBox.classList.remove("open"); renderMarkers(); renderList(); };
+$("#expBtn").onclick=doExport;
+$("#impBtn").onclick=function(){ $("#jsonIn").click(); };
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape"){
+    if($("#lb").classList.contains("on")) return $("#lbClose").click();
+    if($("#modal").classList.contains("on")) return closeModal();
+    if($("#tip").classList.contains("on")) return stopPick();
+    if($("#sheet").classList.contains("open")) return ed?cancelEdit():closeSheet();
+  }
+  if($("#lb").classList.contains("on")){
+    if(e.key==="ArrowLeft") $("#lbPrev").click();
+    if(e.key==="ArrowRight") $("#lbNext").click();
+  }
+  if(document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  if(S.mode==="past"){
+    if(e.key==="ArrowLeft"){ stopPlay(); step(-1); }
+    if(e.key==="ArrowRight"){ stopPlay(); step(1); }
+  }
+});
+map.on("moveend zoomend",function(){
+  try{ localStorage.setItem(LS_VIEW,JSON.stringify({c:map.getCenter(),z:map.getZoom(),g:activeGroup()})); }catch(e){}
+});
+
+function renderAll(){ renderLayerPanel(); renderTimeline(); renderMarkers(); renderList(); }
+var didFit=false;
+function fitIfFirst(){
+  if(didFit||!S.places.length) return;
+  var saved=null; try{ saved=JSON.parse(localStorage.getItem(LS_VIEW)||"null"); }catch(e){}
+  if(saved&&saved.c) return;
+  didFit=true;
+  var pts=S.places.map(function(p){ var ll=disp(p.lat,p.lng); return [ll[0],ll[1]]; });
+  if(pts.length===1) map.setView(pts[0],15);
+  else map.fitBounds(L.latLngBounds(pts).pad(.25));
+}
+
+/* ================= boot ================= */
+loadLocal();
+(function initView(){
+  var saved=null; try{ saved=JSON.parse(localStorage.getItem(LS_VIEW)||"null"); }catch(e){}
+  if(saved&&saved.c&&isFinite(saved.c.lat)){
+    var c=[saved.c.lat,saved.c.lng];
+    if(saved.g!==activeGroup()) c=(activeGroup()==="gcj")?wgs2gcj(c[0],c[1]):gcj2wgs(c[0],c[1]);
+    map.setView(c,saved.z||5);
+  }else{
+    map.setView([32.5,112.5],4.5);
+  }
+})();
+buildBase();
+renderAll();
+fitIfFirst();
+setSync(S.secret?"busy":"local");
+if(S.secret) bootstrapCloud(); else setSync("local","本地");
+if(!S.places.length){
+  setTimeout(function(){
+    modal("这是你的回忆地图",
+      '<div class="crd"><h4>怎么用</h4><p>1　点右下「＋ 标记回忆」，在地图上按下那个地方。<br>2　写下时间、故事，挂几张照片。<br>3　底部切到「时光机」，把滑块往左拖 —— 2014 年以来的卫星影像一年年倒回去，拆掉的老屋、填掉的河、砍掉的树，都还在那些旧图里。</p></div>'+
+      '<div class="crd"><h4>关于老家</h4><p>找到老家的位置后点开它，选「看这里的过去」，再打开「卷帘对比」：屏幕左边是过去，右边是现在，一条线拖过去，就是这些年发生的事。</p></div>'+
+      '<div class="hint">想在手机和电脑上看同一份回忆，点左上角状态按钮解锁云同步。</div>',
+      [{t:"知道了",p:true,f:closeModal}]);
+  },700);
+}
+window.MM={S:S,map:map,byId:byId,WB:WB};
+})();
+
+</script>
+</body>
+</html>
