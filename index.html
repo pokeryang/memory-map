@@ -254,6 +254,11 @@ button{cursor:pointer;border:0;background:none}
   .fab{bottom:calc(132px + env(safe-area-inset-bottom));right:10px;padding:11px 15px;font-size:13px}
   .lyr{width:196px}
   #toast{bottom:calc(142px + env(safe-area-inset-bottom))}
+  .leaflet-control-zoom{display:none}
+  .leaflet-bottom.leaflet-right{bottom:calc(76px + env(safe-area-inset-bottom))}
+  .leaflet-bottom.leaflet-left{bottom:calc(76px + env(safe-area-inset-bottom))}
+  .leaflet-control-attribution{max-width:58vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.72}
+  body.sheet-on .leaflet-bottom{display:none}
 }
 </style>
 </head>
@@ -956,9 +961,10 @@ function flyTo(p){ var ll=disp(p.lat,p.lng); map.flyTo(ll,Math.max(map.getZoom()
 /* ================= sheet: detail ================= */
 function openSheet(){
   $("#sheet").classList.add("open");
+  document.body.classList.add("sheet-on");
   if(window.innerWidth<=640){ $("#drawer").classList.add("hide"); $("#listBtn").classList.remove("on"); }
 }
-function closeSheet(){ $("#sheet").classList.remove("open"); S.sel=null; renderMarkers(); renderList(); }
+function closeSheet(){ $("#sheet").classList.remove("open"); document.body.classList.remove("sheet-on"); S.sel=null; renderMarkers(); renderList(); }
 function openDetail(id){
   var p=byId(id); if(!p) return;
   S.sel=id; renderMarkers(); renderList();
