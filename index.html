@@ -111,6 +111,7 @@ button{cursor:pointer;border:0;background:none}
 .tl-r1 .seg button.on{background:var(--accent);color:#1a1512;font-weight:600}
 .tl-when{margin-left:auto;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
 .tl-when b{color:var(--accent);font-size:16px;font-weight:600;letter-spacing:.4px}
+.tl-when small{display:block;font-size:10.5px;color:var(--ink3);line-height:1.3;margin-top:1px}
 .tl-body{display:none;margin-top:11px}
 .tl-body.open{display:block}
 .yrs{display:flex;gap:3px;overflow:auto;padding-bottom:7px;scrollbar-width:none}
@@ -204,7 +205,7 @@ button{cursor:pointer;border:0;background:none}
   color:#b9d8b0;max-height:180px;overflow:auto;white-space:pre;margin:9px 0}
 
 /* ---------- fab / toast / lightbox / modal ---------- */
-.fab{position:absolute;z-index:640;right:12px;bottom:calc(150px + env(safe-area-inset-bottom));
+.fab{position:absolute;z-index:640;right:12px;bottom:calc(var(--tlh,120px) + 30px + env(safe-area-inset-bottom));
   display:flex;align-items:center;gap:8px;padding:13px 18px;border-radius:999px;background:var(--accent);color:#1a1512;
   font-size:14px;font-weight:700;box-shadow:0 8px 26px rgba(224,160,74,.32)}
 .fab:hover{filter:brightness(1.07)}
@@ -213,7 +214,7 @@ button{cursor:pointer;border:0;background:none}
   padding:9px 17px;border-radius:999px;background:rgba(224,160,74,.95);color:#1a1512;font-size:12.5px;font-weight:600;
   display:none;box-shadow:var(--sh)}
 .tip.on{display:block}
-#toast{position:absolute;z-index:900;left:50%;transform:translateX(-50%);bottom:calc(160px + env(safe-area-inset-bottom));
+#toast{position:absolute;z-index:900;left:50%;transform:translateX(-50%);bottom:calc(var(--tlh,120px) + 40px + env(safe-area-inset-bottom));
   display:flex;flex-direction:column;gap:7px;align-items:center;pointer-events:none}
 #toast div{padding:9px 17px;border-radius:999px;background:rgba(36,31,27,.96);border:1px solid var(--line);
   font-size:12.5px;box-shadow:var(--sh);animation:up .2s}
@@ -251,18 +252,19 @@ button{cursor:pointer;border:0;background:none}
   .sheet.hide{transform:translateY(102%)}
   .tl{width:calc(100vw - 16px);bottom:calc(8px + env(safe-area-inset-bottom));padding:9px 11px 10px}
   .tl-when b{font-size:14px}
-  .fab{bottom:calc(132px + env(safe-area-inset-bottom));right:10px;padding:11px 15px;font-size:13px}
+  .fab{bottom:calc(var(--tlh,110px) + 18px + env(safe-area-inset-bottom));right:10px;padding:11px 15px;font-size:13px}
   .lyr{width:196px}
-  #toast{bottom:calc(142px + env(safe-area-inset-bottom))}
+  #toast{bottom:calc(var(--tlh,110px) + 28px + env(safe-area-inset-bottom))}
   .leaflet-control-zoom{display:none}
-  .leaflet-bottom.leaflet-right{bottom:calc(76px + env(safe-area-inset-bottom))}
-  .leaflet-bottom.leaflet-left{bottom:calc(76px + env(safe-area-inset-bottom))}
+  .leaflet-bottom.leaflet-right{bottom:calc(var(--tlh,68px) + 16px + env(safe-area-inset-bottom))}
+  .leaflet-bottom.leaflet-left{bottom:calc(var(--tlh,68px) + 16px + env(safe-area-inset-bottom))}
   .leaflet-control-attribution{max-width:58vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.72}
-  body.sheet-on .leaflet-bottom{display:none}
+  body.sheet-on .leaflet-bottom,body.tl-open .leaflet-bottom{display:none}
 }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute;left:-9999px" aria-hidden="true"><filter id="shp" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feConvolveMatrix order="3" preserveAlpha="true" divisor="1" kernelMatrix="0 -0.38 0 -0.38 2.52 -0.38 0 -0.38 0"/></filter></svg>
 <div id="map"></div>
 
 <div id="curtain">
@@ -358,7 +360,7 @@ var LS_SECRET= "expense-app-secret";
 var LS_VIEW  = "memory-map-view";
 var LS_OUT   = "memory-map-outbox";
 
-var WB=[["2014-02-20",10],["2014-03-26",4230],["2014-04-30",19819],["2014-05-14",16513],["2014-06-11",31144],["2014-06-25",11033],["2014-07-02",3026],["2014-07-30",5232],["2014-09-17",25586],["2014-10-01",22692],["2014-10-29",11019],["2014-11-12",30195],["2014-12-03",23383],["2014-12-18",14720],["2014-12-30",5844],["2015-01-21",20222],["2015-02-18",10443],["2015-03-18",15084],["2015-03-25",2730],["2015-04-15",9203],["2015-04-30",23880],["2015-05-13",19930],["2015-06-24",11952],["2015-07-08",24007],["2015-08-19",28219],["2015-09-02",30584],["2015-09-16",1431],["2015-09-30",3630],["2015-10-14",10850],["2015-10-28",11092],["2015-11-18",8781],["2015-12-16",28163],["2016-01-13",3515],["2016-02-04",6354],["2016-02-17",11262],["2016-03-02",20443],["2016-03-16",19085],["2016-04-20",388],["2016-04-28",5769],["2016-05-11",8551],["2016-06-13",11509],["2016-07-06",13240],["2016-07-20",5097],["2016-08-11",23601],["2016-08-31",9175],["2016-09-14",6984],["2016-10-12",13770],["2016-10-25",4222],["2016-11-16",21750],["2016-12-07",6678],["2016-12-20",18966],["2017-01-11",577],["2017-01-25",9486],["2017-02-08",27946],["2017-02-27",31026],["2017-03-15",29387],["2017-03-29",5205],["2017-04-19",1052],["2017-05-03",784],["2017-05-17",20365],["2017-05-31",14342],["2017-06-14",14765],["2017-06-27",4073],["2017-07-14",3319],["2017-08-10",14035],["2017-08-30",25379],["2017-09-13",18358],["2017-10-04",15212],["2017-10-25",23264],["2017-11-16",25521],["2018-01-08",13161],["2018-01-18",13045],["2018-01-31",10768],["2018-02-23",13067],["2018-03-14",8255],["2018-03-28",7072],["2018-04-11",20399],["2018-04-25",1296],["2018-05-16",32337],["2018-06-06",8249],["2018-06-27",11334],["2018-07-25",14829],["2018-08-15",1858],["2018-09-06",2168],["2018-09-26",14426],["2018-10-17",18820],["2018-11-07",3201],["2018-11-29",239],["2018-12-14",23448],["2019-01-09",6036],["2019-01-31",25944],["2019-02-21",17677],["2019-03-13",4383],["2019-04-03",18691],["2019-04-24",18063],["2019-05-15",9598],["2019-06-05",12576],["2019-06-26",645],["2019-07-17",16681],["2019-08-07",17216],["2019-08-28",30442],["2019-09-18",9892],["2019-10-09",11351],["2019-10-30",11060],["2019-12-12",4756],["2020-01-08",23001],["2020-01-30",21485],["2020-02-20",8495],["2020-03-23",16062],["2020-04-08",26751],["2020-04-29",15045],["2020-05-20",32645],["2020-06-10",11135],["2020-07-01",18289],["2020-07-22",9549],["2020-08-12",6049],["2020-09-02",9181],["2020-09-23",19187],["2020-10-14",119],["2020-11-18",20753],["2020-12-16",29260],["2021-01-13",1049],["2021-02-24",9812],["2021-03-17",5359],["2021-04-08",6863],["2021-04-28",27659],["2021-05-19",15423],["2021-06-09",48376],["2021-06-30",13534],["2021-07-21",8432],["2021-08-11",51423],["2021-09-01",47568],["2021-09-22",51313],["2021-10-13",16749],["2021-11-03",42403],["2021-11-30",48624],["2021-12-21",26120],["2022-01-12",42663],["2022-02-02",26083],["2022-02-24",10312],["2022-03-16",10321],["2022-04-06",48232],["2022-04-27",16245],["2022-05-18",5314],["2022-06-08",44710],["2022-06-29",4905],["2022-07-20",13851],["2022-08-10",17825],["2022-08-31",45441],["2022-09-21",47471],["2022-10-12",44988],["2022-11-02",7110],["2022-12-14",45134],["2023-01-11",11475],["2023-02-23",57965],["2023-03-15",44873],["2023-04-05",37890],["2023-05-03",46399],["2023-06-13",25982],["2023-06-29",47963],["2023-08-10",17632],["2023-08-31",64776],["2023-10-11",1034],["2023-11-01",12457],["2023-12-07",56102],["2024-01-18",41468],["2024-02-08",37965],["2024-03-07",60013],["2024-03-28",13968],["2024-05-09",52930],["2024-06-06",12428],["2024-06-27",39767],["2024-08-15",32553],["2024-09-19",20337],["2024-10-10",56450],["2024-11-18",49849],["2024-12-12",16453],["2025-01-30",36557],["2025-02-27",34007],["2025-03-27",6543],["2025-04-24",27982],["2025-05-29",25285],["2025-06-26",48925],["2025-07-31",49999],["2025-09-04",52304],["2025-09-25",58924],["2025-10-23",20512],["2025-11-20",51127],["2025-12-18",13192],["2026-01-29",22252],["2026-02-26",64001],["2026-03-25",22869],["2026-04-30",49059],["2026-05-28",10842],["2026-06-30",32246],["2026-08-05",26334]];
+var WB=[["2014-02-20",10,"2014_r01"],["2014-03-26",4230,"2014_r03"],["2014-04-30",19819,"2014_r05"],["2014-05-14",16513,"2014_r06"],["2014-06-11",31144,"2014_r08"],["2014-06-25",11033,"2014_r09"],["2014-07-02",3026,"2014_r10"],["2014-07-30",5232,"2014_r11"],["2014-09-17",25586,"2014_r14"],["2014-10-01",22692,"2014_r15"],["2014-10-29",11019,"2014_r17"],["2014-11-12",30195,"2014_r18"],["2014-12-03",23383,"2014_r19"],["2014-12-18",14720,"2014_r20"],["2014-12-30",5844,"2014_r21"],["2015-01-21",20222,"2015_r01"],["2015-02-18",10443,"2015_r02"],["2015-03-18",15084,"2015_r04"],["2015-03-25",2730,"2015_r05"],["2015-04-15",9203,"2015_r06"],["2015-04-30",23880,"2015_r07"],["2015-05-13",19930,"2015_r08"],["2015-06-24",11952,"2015_r10"],["2015-07-08",24007,"2015_r11"],["2015-08-19",28219,"2015_r13"],["2015-09-02",30584,"2015_r14"],["2015-09-16",1431,"2015_r15"],["2015-09-30",3630,"2015_r16"],["2015-10-14",10850,"2015_r17"],["2015-10-28",11092,"2015_r18"],["2015-11-18",8781,"2015_r20"],["2015-12-16",28163,"2015_r23"],["2016-01-13",3515,"2016_r02"],["2016-02-04",6354,"2016_r03"],["2016-02-17",11262,"2016_r04"],["2016-03-02",20443,"2016_r05"],["2016-03-16",19085,"2016_r06"],["2016-04-20",388,"2016_r08"],["2016-04-28",5769,"2016_r09"],["2016-05-11",8551,"2016_r10"],["2016-06-13",11509,"2016_r11"],["2016-07-06",13240,"2016_r12"],["2016-07-20",5097,"2016_r13"],["2016-08-11",23601,"2016_r14"],["2016-08-31",9175,"2016_r15"],["2016-09-14",6984,"2016_r16"],["2016-10-12",13770,"2016_r18"],["2016-10-25",4222,"2016_r19"],["2016-11-16",21750,"2016_r20"],["2016-12-07",6678,"2016_r21"],["2016-12-20",18966,"2016_r22"],["2017-01-11",577,"2017_r01"],["2017-01-25",9486,"2017_r02"],["2017-02-08",27946,"2017_r03"],["2017-02-27",31026,"2017_r04"],["2017-03-15",29387,"2017_r05"],["2017-03-29",5205,"2017_r06"],["2017-04-19",1052,"2017_r07"],["2017-05-03",784,"2017_r08"],["2017-05-17",20365,"2017_r09"],["2017-05-31",14342,"2017_r10"],["2017-06-14",14765,"2017_r11"],["2017-06-27",4073,"2017_r12"],["2017-07-14",3319,"2017_r13"],["2017-08-10",14035,"2017_r14"],["2017-08-30",25379,"2017_r15"],["2017-09-13",18358,"2017_r16"],["2017-10-04",15212,"2017_r17"],["2017-10-25",23264,"2017_r18"],["2017-11-16",25521,"2017_r19"],["2018-01-08",13161,"2017_r21"],["2018-01-18",13045,"2018_r00"],["2018-01-31",10768,"2018_r01"],["2018-02-23",13067,"2018_r02"],["2018-03-14",8255,"2018_r03"],["2018-03-28",7072,"2018_r04"],["2018-04-11",20399,"2018_r05"],["2018-04-25",1296,"2018_r06"],["2018-05-16",32337,"2018_r07"],["2018-06-06",8249,"2018_r08"],["2018-06-27",11334,"2018_r09"],["2018-07-25",14829,"2018_r10"],["2018-08-15",1858,"2018_r11"],["2018-09-06",2168,"2018_r12"],["2018-09-26",14426,"2018_r13"],["2018-10-17",18820,"2018_r14"],["2018-11-07",3201,"2018_r15"],["2018-11-29",239,"2018_r16"],["2018-12-14",23448,"2018_r17"],["2019-01-09",6036,"2019_r00"],["2019-01-31",25944,"2019_r01"],["2019-02-21",17677,"2019_r02"],["2019-03-13",4383,"2019_r03"],["2019-04-03",18691,"2019_r04"],["2019-04-24",18063,"2019_r05"],["2019-05-15",9598,"2019_r06"],["2019-06-05",12576,"2019_r07"],["2019-06-26",645,"2019_r08"],["2019-07-17",16681,"2019_r09"],["2019-08-07",17216,"2019_r10"],["2019-08-28",30442,"2019_r11"],["2019-09-18",9892,"2019_r12"],["2019-10-09",11351,"2019_r13"],["2019-10-30",11060,"2019_r14"],["2019-12-12",4756,"2019_r16"],["2020-01-08",23001,"2020_r01"],["2020-01-30",21485,"2020_r02"],["2020-02-20",8495,"2020_r03"],["2020-03-23",16062,"2020_r04"],["2020-04-08",26751,"2020_r05"],["2020-04-29",15045,"2020_r06"],["2020-05-20",32645,"2020_r07"],["2020-06-10",11135,"2020_r08"],["2020-07-01",18289,"2020_r09"],["2020-07-22",9549,"2020_r10"],["2020-08-12",6049,"2020_r11"],["2020-09-02",9181,"2020_r12"],["2020-09-23",19187,"2020_r13"],["2020-10-14",119,"2020_r14"],["2020-11-18",20753,"2020_r15"],["2020-12-16",29260,"2020_r16"],["2021-01-13",1049,"2021_r01"],["2021-02-24",9812,"2021_r03"],["2021-03-17",5359,"2021_r04"],["2021-04-08",6863,"2021_r05"],["2021-04-28",27659,"2021_r06"],["2021-05-19",15423,"2021_r07"],["2021-06-09",48376,"2021_r08"],["2021-06-30",13534,"2021_r09"],["2021-07-21",8432,"2021_r10"],["2021-08-11",51423,"2021_r11"],["2021-09-01",47568,"2021_r12"],["2021-09-28",51313,"2021_r13"],["2021-10-13",16749,"2021_r14"],["2021-11-03",42403,"2021_r15"],["2021-11-30",48624,"2021_r16"],["2021-12-21",26120,"2021_r17"],["2022-01-12",42663,"2022_r00"],["2022-02-02",26083,"2022_r01"],["2022-02-24",10312,"2022_r02"],["2022-03-16",10321,"2022_r03"],["2022-04-06",48232,"2022_r04"],["2022-04-27",16245,"2022_r05"],["2022-05-18",5314,"2022_r06"],["2022-06-08",44710,"2022_r07"],["2022-06-29",4905,"2022_r08"],["2022-07-21",13851,"2022_r09"],["2022-08-10",17825,"2022_r10"],["2022-08-31",45441,"2022_r11"],["2022-09-21",47471,"2022_r12"],["2022-10-12",44988,"2022_r13"],["2022-11-02",7110,"2022_r14"],["2022-12-14",45134,"2022_r15"],["2023-01-11",11475,"2023_r00"],["2023-02-23",57965,"2023_r01"],["2023-03-15",44873,"2023_r02"],["2023-04-05",37890,"2023_r03"],["2023-05-03",46399,"2023_r04"],["2023-06-13",25982,"2023_r05"],["2023-06-29",47963,"2023_r06"],["2023-08-10",17632,"2023_r07"],["2023-08-31",64776,"2023_r08"],["2023-10-11",1034,"2023_r09"],["2023-11-01",12457,"2023_r10"],["2023-12-07",56102,"2023_r11"],["2024-01-18",41468,"2024_r00"],["2024-02-08",37965,"2024_r01"],["2024-03-07",60013,"2024_r02"],["2024-03-28",13968,"2024_r03"],["2024-05-09",52930,"2024_r05"],["2024-06-06",12428,"2024_r06"],["2024-06-27",39767,"2024_r07"],["2024-08-15",32553,"2024_r08"],["2024-09-19",20337,"2024_r10"],["2024-10-10",56450,"2024_r11"],["2024-11-18",49849,"2024_r12"],["2024-12-12",16453,"2024_r13"],["2025-01-30",36557,"2025_r01"],["2025-02-27",34007,"2025_r02"],["2025-03-27",6543,"2025_r03"],["2025-04-24",27982,"2025_r04"],["2025-05-29",25285,"2025_r05"],["2025-06-26",48925,"2025_r06"],["2025-07-31",49999,"2025_r07"],["2025-09-04",52304,"2025_r08"],["2025-09-25",58924,"2025_r09"],["2025-10-23",20512,"2025_r10"],["2025-11-20",51127,"2025_r11"],["2025-12-18",13192,"2025_r12"],["2026-01-29",22252,"2026_r01"],["2026-02-26",64001,"2026_r02"],["2026-03-26",22869,"2026_r03"],["2026-04-30",49059,"2026_r04"],["2026-05-28",10842,"2026_r05"],["2026-06-30",32246,"2026_r06"],["2026-08-05",26334,"2026_r07"]];
 
 var TAGS = [
   {k:"老家", c:"#e0563f", e:"🏠"},
@@ -380,9 +382,18 @@ var ESRI_ATTR='影像 © Esri, Maxar, Earthstar Geographics';
 var LAYERS=[
   {id:"esri",  g:"wgs", n:"现在 · 高清影像", sub:"Esri World Imagery",
    url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-   o:{maxZoom:21,maxNativeZoom:19,attribution:ESRI_ATTR}, sw:"#3f5a3a"},
+   meta:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer",
+   o:{maxZoom:21,maxNativeZoom:18,attribution:ESRI_ATTR}, sw:"#3f5a3a"},
+  {id:"gsat",  g:"wgs", n:"最清 · Google 卫星", sub:"原图能到 20 级，比 Esri 细 4 倍；需要能上 Google 的网络",
+   url:"https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+   shotNote:"原图最深 20 级，约 0.13 米一像素",
+   o:{maxZoom:21,maxNativeZoom:20,subdomains:["0","1","2","3"],attribution:'影像 © Google'}, sw:"#2f4a34"},
   {id:"wb",    g:"wgs", n:"时光机 · 历史影像", sub:"Esri Wayback 2014–2026", wayback:true,
-   o:{maxZoom:21,maxNativeZoom:19,subdomains:["a","b"],attribution:ESRI_ATTR+' · Wayback'}, sw:"#5b4a35"},
+   o:{maxZoom:21,maxNativeZoom:18,subdomains:["a","b"],attribution:ESRI_ATTR+' · Wayback'}, sw:"#5b4a35"},
+  {id:"bing",  g:"wgs", n:"另一家 · 微软影像", sub:"Bing 卫星，拍摄时间常和 Esri 不同", bing:true,
+   url:"https://ecn.t{s}.tiles.virtualearth.net/tiles/a{q}.jpeg?g=1",
+   shotNote:"Bing 原图最深 19 级",
+   o:{maxZoom:21,maxNativeZoom:19,subdomains:["0","1","2","3"],attribution:'影像 © Microsoft Bing'}, sw:"#35485b"},
   {id:"eox",   g:"wgs", n:"年度影像 · 无云", sub:"Sentinel-2 cloudless 2017–2025", eox:true,
    o:{maxZoom:19,maxNativeZoom:17,attribution:'Sentinel-2 cloudless © EOX IT Services'}, sw:"#33513f"},
   {id:"street",g:"wgs", n:"街道地图", sub:"Esri World Street Map",
@@ -393,11 +404,13 @@ var LAYERS=[
    o:{maxZoom:20,maxNativeZoom:18,subdomains:["1","2","3","4"],attribution:'© 高德地图'}, sw:"#cfd8c2"},
   {id:"amapst",g:"gcj", n:"高德卫星", sub:"含中文标注参考",
    url:"https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
+   shotNote:"高德原图最深 18 级",
    o:{maxZoom:20,maxNativeZoom:18,subdomains:["1","2","3","4"],attribution:'© 高德地图'}, sw:"#40513a"}
 ];
 var LBL_URL="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}";
 var EOX_YEARS=[2017,2018,2019,2020,2021,2022,2023,2024,2025];
 function wbUrl(rel){ return "https://wayback-{s}.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/default028mm/MapServer/tile/"+rel+"/{z}/{y}/{x}"; }
+function wbMetaUrl(sfx){ return "https://metadata.maptiles.arcgis.com/arcgis/rest/services/World_Imagery_Metadata_"+sfx+"/MapServer"; }
 function eoxUrl(y){ return "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-"+y+"_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg"; }
 
 /* ================= tiny utils ================= */
@@ -452,7 +465,7 @@ function ll2tile(lat,lng,z){
 
 /* ================= state ================= */
 var S={ places:[], baseId:"esri", labels:false, mode:"now", relIdx:WB.length-1,
-        cmp:false, cmpPct:50, onlyChg:false, syncPts:false, tags:[], q:"", sel:null,
+        cmp:false, cmpPct:50, onlyChg:false, syncPts:false, sharp:false, tags:[], q:"", sel:null,
         secret:localStorage.getItem(LS_SECRET)||"", cloud:"local", eoxYear:2019 };
 var photoCache={};   /* placeId -> [photo] */
 var draft=null;      /* {marker, lat, lng} */
@@ -465,13 +478,14 @@ function loadLocal(){
     if(d&&Array.isArray(d.places)) S.places=d.places.filter(function(p){ return p&&p.id&&isFinite(p.lat)&&isFinite(p.lng); });
     if(d&&d.baseId) S.baseId=d.baseId;
     if(d&&typeof d.labels==="boolean") S.labels=d.labels;
+    if(d&&typeof d.sharp==="boolean") S.sharp=d.sharp;
   }catch(e){ console.warn("local load",e); }
 }
 function saveLocal(){
-  var body={v:1,places:S.places,baseId:S.baseId,labels:S.labels};
+  var body={v:1,places:S.places,baseId:S.baseId,labels:S.labels,sharp:S.sharp};
   try{ localStorage.setItem(LS_STATE,JSON.stringify(body)); }
   catch(e){
-    try{ localStorage.setItem(LS_STATE,JSON.stringify({v:1,baseId:S.baseId,labels:S.labels,
+    try{ localStorage.setItem(LS_STATE,JSON.stringify({v:1,baseId:S.baseId,labels:S.labels,sharp:S.sharp,
       places:S.places.map(function(p){ var q={}; for(var k in p) if(k!=="cover") q[k]=p[k]; return q; })})); toast("本地空间不足，封面缩略图未离线缓存"); }
     catch(e2){ console.warn("save fail",e2); }
   }
@@ -646,6 +660,13 @@ map.createPane("lblPane");  map.getPane("lblPane").style.zIndex=340; map.getPane
 var baseLayer=null, cmpLayer=null, lblLayer=null;
 
 function defOf(id){ for(var i=0;i<LAYERS.length;i++) if(LAYERS[i].id===id) return LAYERS[i]; return LAYERS[0]; }
+var BingLayer=L.TileLayer.extend({
+  getTileUrl:function(coords){
+    var z=this._getZoomForUrl(), q="";
+    for(var i=z;i>0;i--){ var d=0,m=1<<(i-1); if(coords.x&m) d+=1; if(coords.y&m) d+=2; q+=d; }
+    return L.Util.template(this._url,{s:this._getSubdomain(coords),q:q});
+  }
+});
 function activeGroup(){ return defOf(S.baseId).g; }
 function urlFor(def){
   if(def.wayback) return wbUrl(WB[clamp(S.relIdx,0,WB.length-1)][1]);
@@ -656,9 +677,12 @@ function buildBase(){
   var def=defOf(S.baseId);
   if(baseLayer){ map.removeLayer(baseLayer); baseLayer=null; }
   var o=Object.assign({pane:"basePane"},def.o);
-  baseLayer=L.tileLayer(urlFor(def),o).addTo(map);
+  baseLayer=def.bing?new BingLayer(urlFor(def),o):L.tileLayer(urlFor(def),o);
+  baseLayer.addTo(map);
   syncLabels();
   syncCmp();
+  applySharp();
+  probeShot();
 }
 function syncLabels(){
   if(lblLayer){ map.removeLayer(lblLayer); lblLayer=null; }
@@ -690,7 +714,7 @@ function syncCmp(){
   if(cmpLayer){ map.removeLayer(cmpLayer); cmpLayer=null; }
   if(!on){ map.getPane("cmpPane").style.clipPath=""; return; }
   cmpLayer=L.tileLayer(LAYERS[0].url,Object.assign({pane:"cmpPane"},LAYERS[0].o)).addTo(map);
-  applyCmpPct();
+  applyCmpPct(); applySharp(); probeCmp();
 }
 function applyCmpPct(){
   var p=clamp(S.cmpPct,3,97);
@@ -711,7 +735,7 @@ function applyCmpPct(){
   grip.addEventListener("pointerdown",function(e){ dragging=true; document.body.style.cursor="ew-resize"; e.preventDefault(); });
   window.addEventListener("pointermove",mv,{passive:false});
   window.addEventListener("pointerup",up);
-  window.addEventListener("resize",function(){ if(S.cmp) applyCmpPct(); });
+  window.addEventListener("resize",function(){ if(S.cmp) applyCmpPct(); syncBottom(); });
 })();
 
 /* ================= markers ================= */
@@ -777,6 +801,10 @@ function renderLayerPanel(){
   t.onclick=function(){ S.labels=!S.labels; saveLocal(); syncLabels(); renderLayerPanel(); };
   if(activeGroup()!=="wgs"){ t.style.opacity=.4; t.onclick=function(){ toast("高德底图自带中文标注"); }; }
   w.appendChild(t);
+  var sh=ce("div","tog",'<span>放大后锐化增强<br><span style="font-size:10.5px;color:var(--ink3)">让糊掉的老照片边缘硬一点</span></span>');
+  var shs=ce("span","sws"+(S.sharp?" on":""),"<i></i>"); sh.appendChild(shs);
+  sh.onclick=function(){ S.sharp=!S.sharp; saveLocal(); applySharp(); renderLayerPanel(); };
+  w.appendChild(sh);
   var loc=ce("button","",'<span class="sw" style="background:#2a3f52;display:flex;align-items:center;justify-content:center">⌖</span><span>定位到我现在的位置</span>');
   loc.onclick=locateMe; w.appendChild(loc);
 }
@@ -789,9 +817,98 @@ function locateMe(){
   },function(){ toast("定位失败，检查浏览器权限"); },{enableHighAccuracy:true,timeout:9000});
 }
 
+/* ============ 影像元数据：这张图是什么时候拍的、最清能到几级 ============ */
+var META_CACHE={}, META_FAIL={}, shotRetry={}, shotInfo=null, shotSeq=0, shotKey=null, WBSHOT={};
+function ymd8(s){ s=String(s||""); return /^\d{8}$/.test(s)?(s.slice(0,4)+"-"+s.slice(4,6)+"-"+s.slice(6,8)):""; }
+function metaQuery(base,lat,lng){
+  var key=base+"|"+lat.toFixed(4)+"|"+lng.toFixed(4);
+  if(META_CACHE[key]) return Promise.resolve(META_CACHE[key]);
+  var d=0.0012;
+  var u=base+"/identify?f=json&geometryType=esriGeometryPoint&sr=4326&tolerance=2&returnGeometry=false&layers=all&imageDisplay=600,600,96"+
+    "&geometry="+encodeURIComponent(JSON.stringify({x:lng,y:lat,spatialReference:{wkid:4326}}))+
+    "&mapExtent="+[lng-d,lat-d,lng+d,lat+d].join(",");
+  function once(){ return fetch(u).then(function(r){ return r.text(); }); }
+  return once().then(function(t){ return (t&&t.charAt(0)==="{")?t:once(); }).then(function(t){
+    var out={};
+    try{
+      var rs=(JSON.parse(t).results)||[];
+      if(rs.length){
+        var a=rs[0].attributes||{};
+        out={ date:ymd8(a["SRC_DATE"]||a["DATE (YYYYMMDD)"]),
+              res:parseFloat(a["SRC_RES"]||a["RESOLUTION (M)"])||null,
+              maxZ:parseInt(a["MaxMapLevel"],10)||null,
+              src:a["NICE_DESC"]||a["SOURCE"]||a["SRC_DESC"]||"" };
+        if(!out.date) out={};
+      }
+    }catch(e){}
+    if(out.date) META_CACHE[key]=out;
+    else { META_FAIL[key]=(META_FAIL[key]||0)+1; if(META_FAIL[key]>=3) META_CACHE[key]=out; }
+    return out;
+  }).catch(function(){ META_FAIL[key]=(META_FAIL[key]||0)+1; if(META_FAIL[key]>=3) META_CACHE[key]={}; return {}; });
+}
+function metaBase(){
+  var def=defOf(S.baseId);
+  if(def.meta) return def.meta;
+  if(def.wayback){ var r=WB[clamp(S.relIdx,0,WB.length-1)]; return (r&&r[2])?wbMetaUrl(r[2]):null; }
+  return null;
+}
+function centerWgs(){
+  var c=map.getCenter();
+  if(activeGroup()==="gcj"){ var w=gcj2wgs(c.lat,c.lng); return {lat:w[0],lng:w[1]}; }
+  return {lat:c.lat,lng:c.lng};
+}
+function probeShot(){
+  var base=metaBase(), seq=++shotSeq;
+  var key=S.baseId+"|"+(S.baseId==="wb"?S.relIdx:S.baseId==="eox"?S.eoxYear:"");
+  var switched=(key!==shotKey);
+  if(switched){ shotKey=key; shotInfo=(S.baseId==="wb"&&WBSHOT[S.relIdx])?WBSHOT[S.relIdx]:null; }
+  if(!base){ shotInfo=null; renderTimeline(); return; }
+  if(switched) renderTimeline();
+  var c=centerWgs(), relAt=S.relIdx, idAt=S.baseId;
+  metaQuery(base,c.lat,c.lng).then(function(m){
+    if(seq!==shotSeq||S.baseId!==idAt) return;
+    shotInfo=(m&&m.date)?m:null;
+    if(idAt==="wb"&&shotInfo) WBSHOT[relAt]=shotInfo;
+    if(m&&m.maxZ&&baseLayer){
+      var mz=clamp(m.maxZ,12,21);
+      if(baseLayer.options.maxNativeZoom!==mz){ baseLayer.options.maxNativeZoom=mz; baseLayer.redraw(); }
+    }
+    renderTimeline();
+    if(!shotInfo&&(shotRetry[key]||0)<2){
+      shotRetry[key]=(shotRetry[key]||0)+1;
+      setTimeout(function(){ if(shotKey===key) probeShot(); },1500);
+    }
+  });
+}
+function probeCmp(){
+  if(!cmpLayer) return;
+  var c=centerWgs();
+  metaQuery(LAYERS[0].meta,c.lat,c.lng).then(function(m){
+    if(!cmpLayer||!m||!m.maxZ) return;
+    var mz=clamp(m.maxZ,12,21);
+    if(cmpLayer.options.maxNativeZoom!==mz){ cmpLayer.options.maxNativeZoom=mz; cmpLayer.redraw(); }
+  });
+}
+var probeT=null;
+function probeSoon(){ if(probeT) clearTimeout(probeT); probeT=setTimeout(function(){ probeT=null; probeShot(); probeCmp(); },450); }
+function shotSub(){
+  var b=[], d=defOf(S.baseId);
+  if(shotInfo){ b.push("实拍 "+shotInfo.date); if(shotInfo.res) b.push(shotInfo.res+" 米"); }
+  else if(d.shotNote) b.push(d.shotNote);
+  var nz=(baseLayer&&baseLayer.options)?baseLayer.options.maxNativeZoom:null;
+  if(shotInfo&&shotInfo.maxZ) nz=shotInfo.maxZ;
+  if(nz&&map.getZoom()>nz+0.4) b.push("已超出原图清晰度");
+  if(!b.length) return "";
+  return '<small>'+esc(b.join(" · "))+'</small>';
+}
+function applySharp(){
+  var f=S.sharp?"url(#shp) contrast(1.04)":"";
+  try{ map.getPane("basePane").style.filter=f; map.getPane("cmpPane").style.filter=f; }catch(e){}
+}
+
 /* ================= timeline ================= */
 var relList=WB.map(function(_,i){ return i; });  /* indices into WB currently shown */
-var playTimer=null, tmCache={};
+var playTimer=null, tmCache={}, wbNote=null;
 function setMode(m){
   S.mode=m;
   $("#mNow").classList.toggle("on",m==="now");
@@ -815,9 +932,9 @@ function renderTimeline(){
       yrs.appendChild(b);
     });
     $("#rng").min=0; $("#rng").max=EOX_YEARS.length-1; $("#rng").value=EOX_YEARS.indexOf(S.eoxYear);
-    $("#whenTxt").innerHTML=(S.mode==="now")?"最新影像":('<b>'+S.eoxYear+'</b> 年度无云影像');
+    $("#whenTxt").innerHTML=((S.mode==="now")?"最新影像":('<b>'+S.eoxYear+'</b> 年度无云影像'))+'<small>整片区域 10 米一像素</small>';
     $("#verInfo").textContent="9 年 · 10 米分辨率";
-    $("#tlNote").textContent="Sentinel-2 年度无云合成，看整片村庄、田地、河道的形状变化最直观（细节较糊）。";
+    $("#tlNote").textContent="Sentinel-2 年度无云合成，看整片村庄、田地、河道的形状变化最直观（10 米一像素，看不清单栋房子）。";
     $("#onlyChg").style.display="none";
   }else{
     if(!yrs.dataset.wb){ yrs.dataset.wb="1"; }
@@ -835,15 +952,26 @@ function renderTimeline(){
     var pos=relList.indexOf(S.relIdx); if(pos<0) pos=nearestPos(S.relIdx);
     $("#rng").min=0; $("#rng").max=Math.max(0,relList.length-1); $("#rng").value=pos;
     var d=WB[S.relIdx][0];
-    $("#whenTxt").innerHTML=(S.mode==="now")?"最新影像":('<b>'+d+'</b> 的影像');
+    $("#whenTxt").innerHTML=((S.mode==="now")?"最新影像":('<b>'+d+'</b> 的版本'))+(shotSub()||'<small>正在查实拍日期…</small>');
     $("#verInfo").textContent=relList.length+" 期 · "+WB[relList[0]][0].slice(0,4)+"–"+WB[relList[relList.length-1]][0].slice(0,4);
     $("#onlyChg").style.display="";
-    $("#tlNote").textContent="Esri Wayback 历史影像存档（0.3–1 米）。拖动滑块回到过去；“只看有变化的版本”会挑出这块地方真正翻新过的年份。";
+    $("#tlNote").textContent=wbNote||"档案里一期不等于一张新照片：同一张卫星照片常被连续几十期沿用。点“只看有变化的版本”，会顺便查出每期的实拍日期，重复的自动折叠。老照片原始分辨率多为 0.5 米、最深只到 17 级，再放大就是把像素拉大。";
   }
   $("#onlyChg").classList.toggle("on",S.onlyChg);
   $("#syncPts").classList.toggle("on",S.syncPts);
   $("#playB").textContent=playTimer?"■":"▶";
   if(S.cmp) applyCmpPct();
+  syncBottom();
+}
+var bottomRaf=0;
+function syncBottom(){
+  if(bottomRaf) return;
+  bottomRaf=requestAnimationFrame(function(){
+    bottomRaf=0;
+    var tl=$("#tl"); if(!tl) return;
+    document.documentElement.style.setProperty("--tlh",tl.offsetHeight+"px");
+    document.body.classList.toggle("tl-open",$("#tlBody").classList.contains("open"));
+  });
 }
 function nearestPos(idx){
   var best=0,bd=1e9;
@@ -898,9 +1026,49 @@ function refineChanged(){
 function applyChanged(keep){
   relList=keep.slice();
   if(relList.indexOf(S.relIdx)<0) S.relIdx=relList[nearestPos(S.relIdx)];
-  renderTimeline(); toast("这块地方共有 "+relList.length+" 个不同的影像版本");
+  renderTimeline();
+  scanShotDates(keep);
 }
-function resetChanged(){ relList=WB.map(function(_,i){ return i; }); renderTimeline(); }
+/* 逐期查实拍日期，把同一张照片被沿用的期次折叠掉 */
+function scanShotDates(keep){
+  var c=centerWgs(), N=keep.length, i=0, done=0, dateOf={};
+  if(!N) return;
+  var ckey=c.lat.toFixed(4)+","+c.lng.toFixed(4);
+  if(scanShotDates.done===ckey) return;
+  $("#verInfo").textContent="查实拍日期 0/"+N;
+  function step2(){
+    if(i>=N) return;
+    var k=keep[i++], r=WB[k], base=(r&&r[2])?wbMetaUrl(r[2]):null;
+    (base?metaQuery(base,c.lat,c.lng):Promise.resolve({})).then(function(m){
+      if(m&&m.date){ WBSHOT[k]=m; dateOf[k]=m.date; }
+      done++;
+      if(done%4===0) $("#verInfo").textContent="查实拍日期 "+done+"/"+N;
+      if(done===N) finish2(); else step2();
+    });
+  }
+  function finish2(){
+    var uniq=[], last=null, shots=[], best=null;
+    keep.forEach(function(k){
+      var d=dateOf[k]||null;
+      if(!d){ uniq.push(k); return; }
+      if(d!==last){ uniq.push(k); shots.push(d); last=d; }
+      var m=WBSHOT[k];
+      if(m&&m.res&&(!best||m.res<best.res)) best=m;
+    });
+    scanShotDates.done=ckey;
+    if(shots.length>=2){
+      relList=uniq;
+      if(relList.indexOf(S.relIdx)<0) S.relIdx=relList[nearestPos(S.relIdx)];
+      var note="这块地方 "+shots[0].slice(0,4)+"–"+shots[shots.length-1].slice(0,4)+" 只拍到 "+shots.length+" 张不同的照片，最早 "+shots[0]+"。";
+      if(best&&best.res) note+="最清的一张 "+best.res+" 米。";
+      wbNote=note+"滑块每一格就是一张新照片。";
+      toast("折叠重复后剩 "+shots.length+" 张不同的照片");
+    }
+    renderTimeline(); probeShot();
+  }
+  for(var w=0;w<3;w++) step2();
+}
+function resetChanged(){ relList=WB.map(function(_,i){ return i; }); wbNote=null; scanShotDates.done=null; renderTimeline(); }
 
 /* ================= list ================= */
 function sortPlaces(a,b){
@@ -1485,6 +1653,7 @@ document.addEventListener("keydown",function(e){
 });
 map.on("moveend zoomend",function(){
   try{ localStorage.setItem(LS_VIEW,JSON.stringify({c:map.getCenter(),z:map.getZoom(),g:activeGroup()})); }catch(e){}
+  probeSoon();
 });
 
 function renderAll(){ renderLayerPanel(); renderTimeline(); renderMarkers(); renderList(); }
@@ -1525,7 +1694,10 @@ if(!S.places.length){
       [{t:"知道了",p:true,f:closeModal}]);
   },700);
 }
-window.MM={S:S,map:map,byId:byId,WB:WB};
+window.MM={S:S,map:map,byId:byId,WB:WB,LAYERS:LAYERS,
+  base:function(){ return baseLayer; }, cmp:function(){ return cmpLayer; },
+  metaQuery:metaQuery, probeShot:probeShot, shot:function(){ return shotInfo; },
+  rel:function(){ return relList; }, sub:shotSub};
 })();
 
 </script>
