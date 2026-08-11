@@ -267,7 +267,7 @@ button{cursor:pointer;border:0;background:none}
 .btn.d{flex:0 0 auto;width:46px;color:var(--err);font-size:15px}
 .f{margin-bottom:14px}
 .f>label{display:block;font-size:11px;letter-spacing:.6px;color:var(--ink3);margin-bottom:6px}
-.f input[type=text],.f textarea,.f select,.f input[type=number]{width:100%;background:var(--bg);border:1px solid var(--line);
+.f input[type=text],.f textarea,.f select,.f input[type=number],.f input[type=tel],.f input[type=password]{width:100%;background:var(--bg);border:1px solid var(--line);
   border-radius:10px;padding:10px 12px;outline:none;font-size:13.5px}
 .f textarea{min-height:112px;resize:vertical;line-height:1.7}
 .f input:focus,.f textarea:focus{border-color:var(--accent)}
@@ -461,10 +461,13 @@ var SB_URL   = "https://gwerzaaishbvtaxhwezv.supabase.co";
 var SB_KEY   = "sb_publishable_mlvyWH8gGyPjwvFgVbhRjA__HE3yrwr";
 var T_PLACE  = "memory_places";
 var T_PHOTO  = "memory_photos";
-var LS_STATE = "memory-map-v1";
-var LS_SECRET= "expense-app-secret";
+var LS_STATE = "memory-map-v1";        /* 未登录（游客）用它；登录后是 LS_STATE+":"+uid */
+var LS_GUEST = "memory-map-v1";        /* 游客库固定键名，首次登录时可以认领过来 */
+var LS_AUTH  = "memory-map-auth";      /* {token,uid,phone,nickname} */
 var LS_VIEW  = "memory-map-view";
 var LS_OUT   = "memory-map-outbox";
+var LS_DEV   = "memory-map-dev";       /* 设备指纹，游客期生成 id 用，防止不同人撞同一个 id */
+var LS_CLAIM = "memory-map-claimed";   /* 游客库被哪个账号认领过，只认领一次 */
 var LS_SCAN  = "memory-map-scan";
 
 var WB=[["2014-02-20",10,"2014_r01"],["2014-03-26",4230,"2014_r03"],["2014-04-30",19819,"2014_r05"],["2014-05-14",16513,"2014_r06"],["2014-06-11",31144,"2014_r08"],["2014-06-25",11033,"2014_r09"],["2014-07-02",3026,"2014_r10"],["2014-07-30",5232,"2014_r11"],["2014-09-17",25586,"2014_r14"],["2014-10-01",22692,"2014_r15"],["2014-10-29",11019,"2014_r17"],["2014-11-12",30195,"2014_r18"],["2014-12-03",23383,"2014_r19"],["2014-12-18",14720,"2014_r20"],["2014-12-30",5844,"2014_r21"],["2015-01-21",20222,"2015_r01"],["2015-02-18",10443,"2015_r02"],["2015-03-18",15084,"2015_r04"],["2015-03-25",2730,"2015_r05"],["2015-04-15",9203,"2015_r06"],["2015-04-30",23880,"2015_r07"],["2015-05-13",19930,"2015_r08"],["2015-06-24",11952,"2015_r10"],["2015-07-08",24007,"2015_r11"],["2015-08-19",28219,"2015_r13"],["2015-09-02",30584,"2015_r14"],["2015-09-16",1431,"2015_r15"],["2015-09-30",3630,"2015_r16"],["2015-10-14",10850,"2015_r17"],["2015-10-28",11092,"2015_r18"],["2015-11-18",8781,"2015_r20"],["2015-12-16",28163,"2015_r23"],["2016-01-13",3515,"2016_r02"],["2016-02-04",6354,"2016_r03"],["2016-02-17",11262,"2016_r04"],["2016-03-02",20443,"2016_r05"],["2016-03-16",19085,"2016_r06"],["2016-04-20",388,"2016_r08"],["2016-04-28",5769,"2016_r09"],["2016-05-11",8551,"2016_r10"],["2016-06-13",11509,"2016_r11"],["2016-07-06",13240,"2016_r12"],["2016-07-20",5097,"2016_r13"],["2016-08-11",23601,"2016_r14"],["2016-08-31",9175,"2016_r15"],["2016-09-14",6984,"2016_r16"],["2016-10-12",13770,"2016_r18"],["2016-10-25",4222,"2016_r19"],["2016-11-16",21750,"2016_r20"],["2016-12-07",6678,"2016_r21"],["2016-12-20",18966,"2016_r22"],["2017-01-11",577,"2017_r01"],["2017-01-25",9486,"2017_r02"],["2017-02-08",27946,"2017_r03"],["2017-02-27",31026,"2017_r04"],["2017-03-15",29387,"2017_r05"],["2017-03-29",5205,"2017_r06"],["2017-04-19",1052,"2017_r07"],["2017-05-03",784,"2017_r08"],["2017-05-17",20365,"2017_r09"],["2017-05-31",14342,"2017_r10"],["2017-06-14",14765,"2017_r11"],["2017-06-27",4073,"2017_r12"],["2017-07-14",3319,"2017_r13"],["2017-08-10",14035,"2017_r14"],["2017-08-30",25379,"2017_r15"],["2017-09-13",18358,"2017_r16"],["2017-10-04",15212,"2017_r17"],["2017-10-25",23264,"2017_r18"],["2017-11-16",25521,"2017_r19"],["2018-01-08",13161,"2017_r21"],["2018-01-18",13045,"2018_r00"],["2018-01-31",10768,"2018_r01"],["2018-02-23",13067,"2018_r02"],["2018-03-14",8255,"2018_r03"],["2018-03-28",7072,"2018_r04"],["2018-04-11",20399,"2018_r05"],["2018-04-25",1296,"2018_r06"],["2018-05-16",32337,"2018_r07"],["2018-06-06",8249,"2018_r08"],["2018-06-27",11334,"2018_r09"],["2018-07-25",14829,"2018_r10"],["2018-08-15",1858,"2018_r11"],["2018-09-06",2168,"2018_r12"],["2018-09-26",14426,"2018_r13"],["2018-10-17",18820,"2018_r14"],["2018-11-07",3201,"2018_r15"],["2018-11-29",239,"2018_r16"],["2018-12-14",23448,"2018_r17"],["2019-01-09",6036,"2019_r00"],["2019-01-31",25944,"2019_r01"],["2019-02-21",17677,"2019_r02"],["2019-03-13",4383,"2019_r03"],["2019-04-03",18691,"2019_r04"],["2019-04-24",18063,"2019_r05"],["2019-05-15",9598,"2019_r06"],["2019-06-05",12576,"2019_r07"],["2019-06-26",645,"2019_r08"],["2019-07-17",16681,"2019_r09"],["2019-08-07",17216,"2019_r10"],["2019-08-28",30442,"2019_r11"],["2019-09-18",9892,"2019_r12"],["2019-10-09",11351,"2019_r13"],["2019-10-30",11060,"2019_r14"],["2019-12-12",4756,"2019_r16"],["2020-01-08",23001,"2020_r01"],["2020-01-30",21485,"2020_r02"],["2020-02-20",8495,"2020_r03"],["2020-03-23",16062,"2020_r04"],["2020-04-08",26751,"2020_r05"],["2020-04-29",15045,"2020_r06"],["2020-05-20",32645,"2020_r07"],["2020-06-10",11135,"2020_r08"],["2020-07-01",18289,"2020_r09"],["2020-07-22",9549,"2020_r10"],["2020-08-12",6049,"2020_r11"],["2020-09-02",9181,"2020_r12"],["2020-09-23",19187,"2020_r13"],["2020-10-14",119,"2020_r14"],["2020-11-18",20753,"2020_r15"],["2020-12-16",29260,"2020_r16"],["2021-01-13",1049,"2021_r01"],["2021-02-24",9812,"2021_r03"],["2021-03-17",5359,"2021_r04"],["2021-04-08",6863,"2021_r05"],["2021-04-28",27659,"2021_r06"],["2021-05-19",15423,"2021_r07"],["2021-06-09",48376,"2021_r08"],["2021-06-30",13534,"2021_r09"],["2021-07-21",8432,"2021_r10"],["2021-08-11",51423,"2021_r11"],["2021-09-01",47568,"2021_r12"],["2021-09-28",51313,"2021_r13"],["2021-10-13",16749,"2021_r14"],["2021-11-03",42403,"2021_r15"],["2021-11-30",48624,"2021_r16"],["2021-12-21",26120,"2021_r17"],["2022-01-12",42663,"2022_r00"],["2022-02-02",26083,"2022_r01"],["2022-02-24",10312,"2022_r02"],["2022-03-16",10321,"2022_r03"],["2022-04-06",48232,"2022_r04"],["2022-04-27",16245,"2022_r05"],["2022-05-18",5314,"2022_r06"],["2022-06-08",44710,"2022_r07"],["2022-06-29",4905,"2022_r08"],["2022-07-21",13851,"2022_r09"],["2022-08-10",17825,"2022_r10"],["2022-08-31",45441,"2022_r11"],["2022-09-21",47471,"2022_r12"],["2022-10-12",44988,"2022_r13"],["2022-11-02",7110,"2022_r14"],["2022-12-14",45134,"2022_r15"],["2023-01-11",11475,"2023_r00"],["2023-02-23",57965,"2023_r01"],["2023-03-15",44873,"2023_r02"],["2023-04-05",37890,"2023_r03"],["2023-05-03",46399,"2023_r04"],["2023-06-13",25982,"2023_r05"],["2023-06-29",47963,"2023_r06"],["2023-08-10",17632,"2023_r07"],["2023-08-31",64776,"2023_r08"],["2023-10-11",1034,"2023_r09"],["2023-11-01",12457,"2023_r10"],["2023-12-07",56102,"2023_r11"],["2024-01-18",41468,"2024_r00"],["2024-02-08",37965,"2024_r01"],["2024-03-07",60013,"2024_r02"],["2024-03-28",13968,"2024_r03"],["2024-05-09",52930,"2024_r05"],["2024-06-06",12428,"2024_r06"],["2024-06-27",39767,"2024_r07"],["2024-08-15",32553,"2024_r08"],["2024-09-19",20337,"2024_r10"],["2024-10-10",56450,"2024_r11"],["2024-11-18",49849,"2024_r12"],["2024-12-12",16453,"2024_r13"],["2025-01-30",36557,"2025_r01"],["2025-02-27",34007,"2025_r02"],["2025-03-27",6543,"2025_r03"],["2025-04-24",27982,"2025_r04"],["2025-05-29",25285,"2025_r05"],["2025-06-26",48925,"2025_r06"],["2025-07-31",49999,"2025_r07"],["2025-09-04",52304,"2025_r08"],["2025-09-25",58924,"2025_r09"],["2025-10-23",20512,"2025_r10"],["2025-11-20",51127,"2025_r11"],["2025-12-18",13192,"2025_r12"],["2026-01-29",22252,"2026_r01"],["2026-02-26",64001,"2026_r02"],["2026-03-26",22869,"2026_r03"],["2026-04-30",49059,"2026_r04"],["2026-05-28",10842,"2026_r05"],["2026-06-30",32246,"2026_r06"],["2026-08-05",26334,"2026_r07"]];
@@ -599,15 +602,27 @@ function ll2tile(lat,lng,z){
 }
 
 /* ================= state ================= */
+/* 登录态必须同步读出来：loadLocal() 依赖它决定读哪个账号的本地库 */
+var _auth0=(function(){ try{ return JSON.parse(localStorage.getItem(LS_AUTH)||"null")||{}; }catch(e){ return {}; } })();
 var S={ nodes:[], baseId:"esri", labels:false, mode:"now", relIdx:WB.length-1,
         cmp:false, cmpPct:50, onlyChg:true, syncPts:false, sharp:false,
         tab:"place", tags:[], per:[], q:"", sel:null,
-        secret:localStorage.getItem(LS_SECRET)||"", cloud:"local", eoxYear:2019 };
+        token:_auth0.token||"", uid:_auth0.uid||"", phone:_auth0.phone||"",
+        nickname:_auth0.nickname||"", cloud:"local", eoxYear:2019 };
 var photoCache={};   /* ownerId -> [photo] */
 var draft=null;      /* {m:marker} */
 var markers={};      /* id -> marker | polyline */
 
-function nid(p){ return p+"-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8); }
+function uidTag(){ return S.uid?String(S.uid).replace(/-/g,"").slice(0,8):""; }
+/* 没登录时也要有个稳定前缀，否则各人本机生成的 id 会撞成同一个（云端 id 是全局主键） */
+function devTag(){
+  var t="";
+  try{ t=localStorage.getItem(LS_DEV)||""; }catch(e){}
+  if(!t){ t="g"+Math.random().toString(36).slice(2,9); try{ localStorage.setItem(LS_DEV,t); }catch(e){} }
+  return t;
+}
+function tag8(){ return uidTag()||devTag(); }
+function nid(p){ return p+"-"+tag8()+"-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8); }
 function ofKind(k){ return S.nodes.filter(function(n){ return n.kind===k; }); }
 function places(){ return ofKind("place"); }
 function routes(){ return ofKind("route"); }
@@ -646,9 +661,12 @@ function coverOf(n){
 function perName(id){ var p=byId(id); return (p&&p.kind==="period")?nodeName(p):""; }
 function perLabel(p){ return [p.from||"",p.to||""].filter(Boolean).join("–"); }
 
+/* 本地库按账号分开：登录后是 memory-map-v1:<uid>，未登录沿用老键（游客库） */
+function stateKey(){ return S.uid?LS_STATE+":"+S.uid:LS_STATE; }
+function outKey(){ return S.uid?LS_OUT+":"+S.uid:LS_OUT; }
 function loadLocal(){
   try{
-    var raw=localStorage.getItem(LS_STATE); if(!raw) return;
+    var raw=localStorage.getItem(stateKey()); if(!raw) return;
     var d=JSON.parse(raw); if(!d) return;
     var arr=Array.isArray(d.nodes)?d.nodes:(Array.isArray(d.places)?d.places:[]);
     S.nodes=arr.filter(function(n){ return n&&n.id; });
@@ -659,21 +677,23 @@ function loadLocal(){
 }
 function saveLocal(){
   var body={v:2,nodes:S.nodes,baseId:S.baseId,labels:S.labels,sharp:S.sharp};
-  try{ localStorage.setItem(LS_STATE,JSON.stringify(body)); }
+  try{ localStorage.setItem(stateKey(),JSON.stringify(body)); }
   catch(e){
-    try{ localStorage.setItem(LS_STATE,JSON.stringify({v:2,baseId:S.baseId,labels:S.labels,sharp:S.sharp,
+    try{ localStorage.setItem(stateKey(),JSON.stringify({v:2,baseId:S.baseId,labels:S.labels,sharp:S.sharp,
       nodes:S.nodes.map(function(p){ var q={}; for(var k in p) if(k!=="cover") q[k]=p[k]; return q; })})); toast("本地空间不足，封面缩略图未离线缓存"); }
     catch(e2){ console.warn("save fail",e2); }
   }
 }
-function outbox(){ try{ return JSON.parse(localStorage.getItem(LS_OUT)||"[]"); }catch(e){ return []; } }
-function setOutbox(a){ try{ localStorage.setItem(LS_OUT,JSON.stringify(a.slice(-400))); }catch(e){} }
+function outbox(){ try{ return JSON.parse(localStorage.getItem(outKey())||"[]"); }catch(e){ return []; } }
+function setOutbox(a){ try{ localStorage.setItem(outKey(),JSON.stringify(a.slice(-400))); }catch(e){} }
 function queueOp(op){ var a=outbox(); a=a.filter(function(o){ return !(o.t===op.t&&o.id===op.id); }); a.push(op); setOutbox(a); }
 
 /* ================= IndexedDB (photos) ================= */
-var _db=null, _dbDead=false, _dbWarned=false;
-function idb(){
-  if(_db) return Promise.resolve(_db);
+/* 每个账号一个独立库：memory-map-<uid8>；未登录用老库名 memory-map（游客库） */
+var _dbs={}, _dbDead=false, _dbWarned=false;
+function dbName(){ var u=uidTag(); return u?"memory-map-"+u:"memory-map"; }
+function idbOpen(name){
+  if(_dbs[name]) return Promise.resolve(_dbs[name]);
   if(_dbDead) return Promise.reject(new Error("idb unavailable"));
   return new Promise(function(res,rej){
     if(!window.indexedDB){ _dbDead=true; return rej(new Error("no idb")); }
@@ -681,20 +701,21 @@ function idb(){
     function fail(e){
       if(settled) return; settled=true; _dbDead=true;
       if(!_dbWarned){ _dbWarned=true; setTimeout(function(){
-        if(S.cloud!=="synced") try{ toast("这个环境不让存本地照片，建议开云同步"); }catch(_){}
+        if(S.cloud!=="synced") try{ toast("这个环境不让存本地照片，建议登录后用云同步"); }catch(_){}
       },300); }
       rej(e||new Error("idb error"));
     }
     setTimeout(function(){ fail(new Error("idb timeout")); },4000);
     var r;
-    try{ r=indexedDB.open("memory-map",1); }catch(e){ return fail(e); }
+    try{ r=indexedDB.open(name,1); }catch(e){ return fail(e); }
     r.onupgradeneeded=function(){ var db=r.result;
       if(!db.objectStoreNames.contains("photos")){ var st=db.createObjectStore("photos",{keyPath:"id"}); st.createIndex("placeId","placeId",{unique:false}); } };
-    r.onsuccess=function(){ if(settled) return; settled=true; _db=r.result; res(_db); };
+    r.onsuccess=function(){ if(settled) return; settled=true; _dbs[name]=r.result; res(r.result); };
     r.onerror=function(){ fail(r.error); };
     r.onblocked=function(){ fail(new Error("idb blocked")); };
   });
 }
+function idb(){ return idbOpen(dbName()); }
 function idbPut(p){ return idb().then(function(db){ return new Promise(function(res,rej){
   var tx=db.transaction("photos","readwrite"); tx.objectStore("photos").put(p);
   tx.oncomplete=function(){res(p);}; tx.onerror=function(){rej(tx.error);}; }); }).catch(function(){ return p; }); }
@@ -712,14 +733,14 @@ function idbAll(){ return idb().then(function(db){ return new Promise(function(r
 /* ================= cloud ================= */
 function hdrs(extra){
   var h={ apikey:SB_KEY, Authorization:"Bearer "+SB_KEY };
-  if(S.secret) h["x-app-secret"]=S.secret;
+  if(S.token) h["x-app-token"]=S.token;
   if(extra) for(var k in extra) h[k]=extra[k];
   return h;
 }
 function setSync(kind,txt){
   S.cloud=kind; var c=$("#syncChip");
   c.className="chip sync "+(kind==="synced"?"ok":kind==="busy"?"busy":kind==="offline"?"off":"");
-  $("#syncTxt").textContent=txt||({synced:"云端已同步",busy:"同步中",offline:"离线",local:"本地",needsetup:"待建表",locked:"未解锁"}[kind]||kind);
+  $("#syncTxt").textContent=txt||({synced:"云端已同步",busy:"同步中",offline:"离线",local:"本地",needsetup:"待建表",locked:"未登录"}[kind]||kind);
 }
 function api(path,opt){
   opt=opt||{};
@@ -728,16 +749,21 @@ function api(path,opt){
       var j=null; try{ j=t?JSON.parse(t):null; }catch(e){}
       return { ok:r.ok, status:r.status, data:j, raw:t }; }); });
 }
+/* 账号相关的库函数都走 rpc；token 由 hdrs() 自动带上 */
+function rpc(fn,args){
+  return api("rpc/"+fn,{ method:"POST", headers:{"Content-Type":"application/json"},
+                         body:JSON.stringify(args||{}) });
+}
 function rowOf(n){
   var d={}; for(var k in n) if(k!=="id"&&k!=="lat"&&k!=="lng") d[k]=n[k];
-  return { id:n.id, lat:isFinite(n.lat)?+n.lat:0, lng:isFinite(n.lng)?+n.lng:0, data:d, updated_at:new Date().toISOString() };
+  return { id:n.id, user_id:S.uid||null, lat:isFinite(n.lat)?+n.lat:0, lng:isFinite(n.lng)?+n.lng:0, data:d, updated_at:new Date().toISOString() };
 }
 function nodeOf(row){
   var n=Object.assign({},row.data||{},{ id:row.id, lat:+row.lat, lng:+row.lng });
   if(!n.updatedAt) n.updatedAt=row.updated_at?Date.parse(row.updated_at):0;
   return n;
 }
-function cloudReady(){ return !!S.secret && (S.cloud==="synced"||S.cloud==="busy"); }
+function cloudReady(){ return !!S.token && (S.cloud==="synced"||S.cloud==="busy"); }
 
 /* 老数据 → 地点 + 故事。跑过的行带 kind，可以重复调用，多设备也不会重复生成 */
 function migrate(){
@@ -780,8 +806,9 @@ function migrate(){
     if(chg){ n.updatedAt=Date.now(); touched.push(n); }
   });
   if(!periods().length){
+    var ut=tag8();
     DEF_PERIODS.forEach(function(nm,i){
-      var id="pd-"+(i+1);
+      var id="pd-"+(ut?ut+"-":"")+(i+1);
       if(have[id]) return;
       var p={ id:id, kind:"period", lat:0, lng:0, name:nm, from:"", to:"", createdAt:Date.now(), updatedAt:Date.now() };
       S.nodes.push(p); touched.push(p);
@@ -792,33 +819,33 @@ function migrate(){
 }
 
 function pushNode(n){
-  if(!S.secret) return Promise.resolve();
+  if(!S.token) return Promise.resolve();
   return api(T_PLACE+"?on_conflict=id",{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},
     body:JSON.stringify([rowOf(n)])}).then(function(r){
       if(!r.ok){ if(r.status===404) setSync("needsetup"); else { queueOp({t:"place",id:n.id}); setSync("offline"); } }
       return r; }).catch(function(){ queueOp({t:"place",id:n.id}); setSync("offline"); });
 }
 function delNodeCloud(id){
-  if(!S.secret) return Promise.resolve();
+  if(!S.token) return Promise.resolve();
   return api(T_PHOTO+"?place_id=eq."+encodeURIComponent(id),{method:"DELETE",headers:{Prefer:"return=minimal"}})
     .then(function(){ return api(T_PLACE+"?id=eq."+encodeURIComponent(id),{method:"DELETE",headers:{Prefer:"return=minimal"}}); })
     .then(function(r){ if(!r.ok&&r.status!==404) queueOp({t:"delPlace",id:id}); })
     .catch(function(){ queueOp({t:"delPlace",id:id}); });
 }
 function pushPhoto(ph){
-  if(!S.secret) return Promise.resolve();
+  if(!S.token) return Promise.resolve();
   return api(T_PHOTO+"?on_conflict=id",{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},
-    body:JSON.stringify([{id:ph.id,place_id:ph.placeId,data:{img:ph.img,name:ph.name||"",w:ph.w||0,h:ph.h||0,createdAt:ph.createdAt||Date.now()}}])})
+    body:JSON.stringify([{id:ph.id,place_id:ph.placeId,user_id:S.uid||null,data:{img:ph.img,name:ph.name||"",w:ph.w||0,h:ph.h||0,createdAt:ph.createdAt||Date.now()}}])})
     .then(function(r){ if(!r.ok) queueOp({t:"photo",id:ph.id}); return r; })
     .catch(function(){ queueOp({t:"photo",id:ph.id}); });
 }
 function delPhotoCloud(id){
-  if(!S.secret) return Promise.resolve();
+  if(!S.token) return Promise.resolve();
   return api(T_PHOTO+"?id=eq."+encodeURIComponent(id),{method:"DELETE",headers:{Prefer:"return=minimal"}})
     .then(function(r){ if(!r.ok&&r.status!==404) queueOp({t:"delPhoto",id:id}); }).catch(function(){ queueOp({t:"delPhoto",id:id}); });
 }
 function flushOutbox(){
-  var ops=outbox(); if(!ops.length||!S.secret) return;
+  var ops=outbox(); if(!ops.length||!S.token) return;
   setOutbox([]);
   ops.forEach(function(o){
     if(o.t==="place"){ var p=byId(o.id); if(p) pushNode(p); }
@@ -829,12 +856,12 @@ function flushOutbox(){
   });
 }
 function bootstrapCloud(){
-  if(!S.secret){ setSync("locked"); return Promise.resolve(); }
+  if(!S.token){ setSync("locked"); return Promise.resolve(); }
   setSync("busy");
   return api(T_PLACE+"?select=*").then(function(r){
-    if(r.status===404){ setSync("needsetup"); toast("云端还没建表，点右上角状态按钮一键完成"); promptSetup(); return; }
+    if(r.status===404){ setSync("needsetup"); toast("云端还差一步建表，点左上角状态按钮"); promptSetup(); return; }
     if(!r.ok||!Array.isArray(r.data)){
-      if(r.status===401||r.status===403){ setSync("locked"); toast("密钥不对，云端拒绝访问"); }
+      if(r.status===401||r.status===403){ setSync("locked"); toast("登录状态失效了，重新登录一下"); }
       else setSync("offline");
       return;
     }
@@ -860,7 +887,7 @@ function loadPhotos(pid){
   return idbByPlace(pid).then(function(local){
     var seen={}, merged=[];
     cached.concat(local).forEach(function(x){ if(x&&!seen[x.id]){ seen[x.id]=1; merged.push(x); } });
-    if(!S.secret||S.cloud!=="synced"||merged.length>=want) return merged;
+    if(!S.token||S.cloud!=="synced"||merged.length>=want) return merged;
     return api(T_PHOTO+"?place_id=eq."+encodeURIComponent(pid)+"&select=*").then(function(r){
       if(!r.ok||!Array.isArray(r.data)) return merged;
       var add=[];
@@ -2267,7 +2294,7 @@ $("#fileIn").onchange=function(e){
     pendingPhotos++;
     seq=seq.then(function(){ return compress(f); }).then(function(r){
       if(!r) return;
-      var ph={ id:"ph-"+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
+      var ph={ id:nid("ph"),
         placeId:owner, img:r.img, thumb:r.thumb, name:f.name||"", w:r.w, h:r.h, createdAt:Date.now(), _new:true };
       okN++;
       if(ed&&ed.id===owner){ ed.photos.push(ph); drawEditor(); }
@@ -2583,66 +2610,559 @@ function closeModal(){ $("#modal").classList.remove("on"); }
 $("#mClose").onclick=closeModal;
 $("#modal").onclick=function(e){ if(e.target.id==="modal") closeModal(); };
 
-var SETUP_SQL=
-"-- 回忆地图：在 Supabase → SQL Editor 里整段粘贴运行一次即可\n"+
-"create table if not exists public.memory_places (\n"+
-"  id text primary key,\n"+
-"  lat double precision not null,\n"+
-"  lng double precision not null,\n"+
-"  data jsonb not null default '{}'::jsonb,\n"+
-"  created_at timestamptz not null default now(),\n"+
-"  updated_at timestamptz not null default now()\n"+
-");\n"+
-"create table if not exists public.memory_photos (\n"+
-"  id text primary key,\n"+
-"  place_id text not null,\n"+
-"  data jsonb not null default '{}'::jsonb,\n"+
-"  created_at timestamptz not null default now()\n"+
-");\n"+
-"create index if not exists memory_photos_place_idx on public.memory_photos(place_id);\n"+
-"alter table public.memory_places enable row level security;\n"+
-"alter table public.memory_photos enable row level security;\n"+
-"drop policy if exists memory_places_secret on public.memory_places;\n"+
-"create policy memory_places_secret on public.memory_places for all to anon, authenticated\n"+
-"  using (coalesce(public.verify_expense_secret(), false))\n"+
-"  with check (coalesce(public.verify_expense_secret(), false));\n"+
-"drop policy if exists memory_photos_secret on public.memory_photos;\n"+
-"create policy memory_photos_secret on public.memory_photos for all to anon, authenticated\n"+
-"  using (coalesce(public.verify_expense_secret(), false))\n"+
-"  with check (coalesce(public.verify_expense_secret(), false));\n"+
-"notify pgrst, 'reload schema';";
+var SETUP_SQL=[
+  "-- ============================================================",
+  "-- 回忆地图 · 手机号+密码账号体系 + 每个账号数据各自隔离",
+  "-- 在 Supabase 控制台 → SQL Editor → New query，整段粘贴运行一次即可。",
+  "-- 幂等：重复运行安全，不会丢数据。",
+  "--",
+  "-- 为什么不用 Supabase 自带的 Auth：项目里 phone provider 没开，",
+  "-- 而开启它必须先填 Twilio 凭证（国内号码属国际短信，要报备+付费）；",
+  "-- 邮箱通道又开着「确认邮件」，拿手机号拼伪邮箱收不到信也登不进去。",
+  "-- 所以账号体系直接建在库里：密码用 bcrypt 存哈希，登录换一个随机 token，",
+  "-- 请求头带 x-app-token，RLS 靠它认人。以后要接短信验证码，只需再加一个 RPC。",
+  "-- ============================================================",
+  "",
+  "create extension if not exists pgcrypto;",
+  "",
+  "-- ------------------------------------------------------------",
+  "-- 1) 账号 / 会话 / 登录失败记录",
+  "--    三张表都开 RLS 且不建任何 policy，anon 权限也全部撤掉，",
+  "--    也就是说前端永远读不到密码哈希，只能通过下面的函数进出。",
+  "-- ------------------------------------------------------------",
+  "create table if not exists public.app_users (",
+  "  id            uuid primary key default gen_random_uuid(),",
+  "  phone         text not null unique,",
+  "  pass_hash     text not null,",
+  "  nickname      text,",
+  "  created_at    timestamptz not null default now(),",
+  "  last_login_at timestamptz",
+  ");",
+  "alter table public.app_users enable row level security;",
+  "revoke all on public.app_users from anon, authenticated;",
+  "",
+  "create table if not exists public.app_sessions (",
+  "  token        text primary key,",
+  "  user_id      uuid not null references public.app_users(id) on delete cascade,",
+  "  created_at   timestamptz not null default now(),",
+  "  expires_at   timestamptz not null default (now() + interval '90 days'),",
+  "  last_seen_at timestamptz not null default now()",
+  ");",
+  "create index if not exists app_sessions_user_idx on public.app_sessions(user_id);",
+  "create index if not exists app_sessions_exp_idx  on public.app_sessions(expires_at);",
+  "alter table public.app_sessions enable row level security;",
+  "revoke all on public.app_sessions from anon, authenticated;",
+  "",
+  "create table if not exists public.app_login_fails (",
+  "  id    bigserial primary key,",
+  "  phone text not null,",
+  "  at    timestamptz not null default now()",
+  ");",
+  "create index if not exists app_login_fails_idx on public.app_login_fails(phone, at desc);",
+  "alter table public.app_login_fails enable row level security;",
+  "revoke all on public.app_login_fails from anon, authenticated;",
+  "",
+  "-- ------------------------------------------------------------",
+  "-- 2) 手机号规范化：只留数字，+86 前缀去掉",
+  "-- ------------------------------------------------------------",
+  "create or replace function public.app_norm_phone(p text)",
+  "returns text",
+  "language plpgsql",
+  "immutable",
+  "as $fn$",
+  "declare d text;",
+  "begin",
+  "  d := regexp_replace(coalesce(p, ''), '[^0-9]', '', 'g');",
+  "  if length(d) = 13 and left(d, 2) = '86' then",
+  "    d := substr(d, 3);",
+  "  end if;",
+  "  return d;",
+  "end",
+  "$fn$;",
+  "",
+  "-- ------------------------------------------------------------",
+  "-- 3) app_uid()：从请求头 x-app-token 反查当前是谁。RLS 全靠这个。",
+  "--    没带 token / token 过期 / token 瞎编 → 返回 null → 一行也看不到。",
+  "-- ------------------------------------------------------------",
+  "create or replace function public.app_uid()",
+  "returns uuid",
+  "language sql",
+  "stable",
+  "security definer",
+  "set search_path = public, extensions",
+  "as $fn$",
+  "  select s.user_id",
+  "    from public.app_sessions s",
+  "   where s.token = coalesce(",
+  "           nullif(current_setting('request.headers', true), '')::json ->> 'x-app-token',",
+  "           '')",
+  "     and s.token <> ''",
+  "     and s.expires_at > now()",
+  "   limit 1",
+  "$fn$;",
+  "grant execute on function public.app_uid() to anon, authenticated;",
+  "",
+  "-- ------------------------------------------------------------",
+  "-- 4) 注册",
+  "-- ------------------------------------------------------------",
+  "create or replace function public.app_register(p_phone text, p_password text, p_nickname text default null)",
+  "returns json",
+  "language plpgsql",
+  "security definer",
+  "set search_path = public, extensions",
+  "as $fn$",
+  "declare",
+  "  v_phone text;",
+  "  v_nick  text;",
+  "  v_id    uuid;",
+  "  v_token text;",
+  "begin",
+  "  v_phone := public.app_norm_phone(p_phone);",
+  "  v_nick  := nullif(btrim(coalesce(p_nickname, '')), '');",
+  "",
+  "  if v_phone !~ '^1[3-9][0-9]{9}$' then",
+  "    return json_build_object('ok', false, 'err', 'phone_invalid');",
+  "  end if;",
+  "  if length(coalesce(p_password, '')) < 6 then",
+  "    return json_build_object('ok', false, 'err', 'password_weak');",
+  "  end if;",
+  "  if exists (select 1 from public.app_users u where u.phone = v_phone) then",
+  "    return json_build_object('ok', false, 'err', 'phone_taken');",
+  "  end if;",
+  "",
+  "  insert into public.app_users (phone, pass_hash, nickname, last_login_at)",
+  "       values (v_phone, crypt(p_password, gen_salt('bf', 10)), v_nick, now())",
+  "    returning id into v_id;",
+  "",
+  "  v_token := encode(gen_random_bytes(32), 'hex');",
+  "  insert into public.app_sessions (token, user_id) values (v_token, v_id);",
+  "",
+  "  return json_build_object('ok', true, 'token', v_token, 'uid', v_id,",
+  "                           'phone', v_phone, 'nickname', v_nick);",
+  "exception when unique_violation then",
+  "  return json_build_object('ok', false, 'err', 'phone_taken');",
+  "end",
+  "$fn$;",
+  "grant execute on function public.app_register(text, text, text) to anon, authenticated;",
+  "",
+  "-- ------------------------------------------------------------",
+  "-- 5) 登录（同一手机号 15 分钟内连错 10 次就先锁住）",
+  "-- ------------------------------------------------------------",
+  "create or replace function public.app_login(p_phone text, p_password text)",
+  "returns json",
+  "language plpgsql",
+  "security definer",
+  "set search_path = public, extensions",
+  "as $fn$",
+  "declare",
+  "  v_phone text;",
+  "  v_u     public.app_users;",
+  "  v_token text;",
+  "  v_fails int;",
+  "begin",
+  "  v_phone := public.app_norm_phone(p_phone);",
+  "",
+  "  select count(*) into v_fails",
+  "    from public.app_login_fails f",
+  "   where f.phone = v_phone",
+  "     and f.at > now() - interval '15 minutes';",
+  "  if v_fails >= 10 then",
+  "    return json_build_object('ok', false, 'err', 'too_many');",
+  "  end if;",
+  "",
+  "  select * into v_u from public.app_users u where u.phone = v_phone;",
+  "  if v_u.id is null or v_u.pass_hash is distinct from crypt(p_password, v_u.pass_hash) then",
+  "    insert into public.app_login_fails (phone) values (v_phone);",
+  "    return json_build_object('ok', false, 'err', 'bad_credentials');",
+  "  end if;",
+  "",
+  "  delete from public.app_login_fails f where f.phone = v_phone;",
+  "  delete from public.app_sessions   s where s.expires_at < now();",
+  "",
+  "  v_token := encode(gen_random_bytes(32), 'hex');",
+  "  insert into public.app_sessions (token, user_id) values (v_token, v_u.id);",
+  "  update public.app_users u set last_login_at = now() where u.id = v_u.id;",
+  "",
+  "  return json_build_object('ok', true, 'token', v_token, 'uid', v_u.id,",
+  "                           'phone', v_phone, 'nickname', v_u.nickname);",
+  "end",
+  "$fn$;",
+  "grant execute on function public.app_login(text, text) to anon, authenticated;",
+  "",
+  "-- ------------------------------------------------------------",
+  "-- 6) 我是谁（页面打开时校验 token 还有效没）",
+  "-- ------------------------------------------------------------",
+  "create or replace function public.app_me()",
+  "returns json",
+  "language plpgsql",
+  "security definer",
+  "set search_path = public, extensions",
+  "as $fn$",
+  "declare",
+  "  v_id  uuid;",
+  "  v_u   public.app_users;",
+  "  v_tok text;",
+  "begin",
+  "  v_id := public.app_uid();",
+  "  if v_id is null then",
+  "    return json_build_object('ok', false, 'err', 'no_session');",
+  "  end if;",
+  "  v_tok := coalesce(nullif(current_setting('request.headers', true), '')::json ->> 'x-app-token', '');",
+  "  update public.app_sessions s set last_seen_at = now() where s.token = v_tok;",
+  "  select * into v_u from public.app_users u where u.id = v_id;",
+  "  return json_build_object('ok', true, 'uid', v_u.id, 'phone', v_u.phone,",
+  "                           'nickname', v_u.nickname, 'created_at', v_u.created_at);",
+  "end",
+  "$fn$;",
+  "grant execute on function public.app_me() to anon, authenticated;",
+  "",
+  "-- ------------------------------------------------------------",
+  "-- 7) 退出登录（只吊销当前这台设备的 token）",
+  "-- ------------------------------------------------------------",
+  "create or replace function public.app_logout()",
+  "returns json",
+  "language plpgsql",
+  "security definer",
+  "set search_path = public, extensions",
+  "as $fn$",
+  "declare v_tok text;",
+  "begin",
+  "  v_tok := coalesce(nullif(current_setting('request.headers', true), '')::json ->> 'x-app-token', '');",
+  "  if v_tok <> '' then",
+  "    delete from public.app_sessions s where s.token = v_tok;",
+  "  end if;",
+  "  return json_build_object('ok', true);",
+  "end",
+  "$fn$;",
+  "grant execute on function public.app_logout() to anon, authenticated;",
+  "",
+  "-- ------------------------------------------------------------",
+  "-- 8) 改密码（改完把其他设备踢下线，当前设备留着）",
+  "-- ------------------------------------------------------------",
+  "create or replace function public.app_change_password(p_old text, p_new text)",
+  "returns json",
+  "language plpgsql",
+  "security definer",
+  "set search_path = public, extensions",
+  "as $fn$",
+  "declare",
+  "  v_id  uuid;",
+  "  v_u   public.app_users;",
+  "  v_tok text;",
+  "begin",
+  "  v_id := public.app_uid();",
+  "  if v_id is null then",
+  "    return json_build_object('ok', false, 'err', 'no_session');",
+  "  end if;",
+  "  if length(coalesce(p_new, '')) < 6 then",
+  "    return json_build_object('ok', false, 'err', 'password_weak');",
+  "  end if;",
+  "  select * into v_u from public.app_users u where u.id = v_id;",
+  "  if v_u.pass_hash is distinct from crypt(p_old, v_u.pass_hash) then",
+  "    return json_build_object('ok', false, 'err', 'bad_credentials');",
+  "  end if;",
+  "  v_tok := coalesce(nullif(current_setting('request.headers', true), '')::json ->> 'x-app-token', '');",
+  "  update public.app_users u set pass_hash = crypt(p_new, gen_salt('bf', 10)) where u.id = v_id;",
+  "  delete from public.app_sessions s where s.user_id = v_id and s.token <> v_tok;",
+  "  return json_build_object('ok', true);",
+  "end",
+  "$fn$;",
+  "grant execute on function public.app_change_password(text, text) to anon, authenticated;",
+  "",
+  "-- ------------------------------------------------------------",
+  "-- 9) 改昵称",
+  "-- ------------------------------------------------------------",
+  "create or replace function public.app_set_nickname(p_nickname text)",
+  "returns json",
+  "language plpgsql",
+  "security definer",
+  "set search_path = public, extensions",
+  "as $fn$",
+  "declare v_id uuid; v_nick text;",
+  "begin",
+  "  v_id := public.app_uid();",
+  "  if v_id is null then",
+  "    return json_build_object('ok', false, 'err', 'no_session');",
+  "  end if;",
+  "  v_nick := nullif(btrim(coalesce(p_nickname, '')), '');",
+  "  update public.app_users u set nickname = v_nick where u.id = v_id;",
+  "  return json_build_object('ok', true, 'nickname', v_nick);",
+  "end",
+  "$fn$;",
+  "grant execute on function public.app_set_nickname(text) to anon, authenticated;",
+  "",
+  "-- ============================================================",
+  "-- 10) 业务表：两张表都建好（首次跑也能用），然后加 user_id 并换掉旧的共享密钥策略",
+  "-- ============================================================",
+  "create table if not exists public.memory_places (",
+  "  id         text primary key,",
+  "  lat        double precision not null,",
+  "  lng        double precision not null,",
+  "  data       jsonb not null default '{}'::jsonb,",
+  "  created_at timestamptz not null default now(),",
+  "  updated_at timestamptz not null default now()",
+  ");",
+  "create table if not exists public.memory_photos (",
+  "  id         text primary key,",
+  "  place_id   text not null,",
+  "  data       jsonb not null default '{}'::jsonb,",
+  "  created_at timestamptz not null default now()",
+  ");",
+  "create index if not exists memory_photos_place_idx on public.memory_photos(place_id);",
+  "",
+  "alter table public.memory_places add column if not exists user_id uuid;",
+  "alter table public.memory_photos add column if not exists user_id uuid;",
+  "",
+  "do $do$",
+  "begin",
+  "  if not exists (select 1 from pg_constraint where conname = 'memory_places_user_fk') then",
+  "    alter table public.memory_places",
+  "      add constraint memory_places_user_fk foreign key (user_id)",
+  "      references public.app_users(id) on delete cascade;",
+  "  end if;",
+  "  if not exists (select 1 from pg_constraint where conname = 'memory_photos_user_fk') then",
+  "    alter table public.memory_photos",
+  "      add constraint memory_photos_user_fk foreign key (user_id)",
+  "      references public.app_users(id) on delete cascade;",
+  "  end if;",
+  "end",
+  "$do$;",
+  "",
+  "-- 前端会显式带上 user_id；这里的 default 只是兜底",
+  "alter table public.memory_places alter column user_id set default public.app_uid();",
+  "alter table public.memory_photos alter column user_id set default public.app_uid();",
+  "",
+  "create index if not exists memory_places_user_idx on public.memory_places(user_id);",
+  "create index if not exists memory_photos_user_idx on public.memory_photos(user_id, place_id);",
+  "",
+  "-- 旧的共享密钥策略一定要删掉，不然拿着那串老密钥的人还能读写所有人的数据",
+  "drop policy if exists memory_places_secret on public.memory_places;",
+  "drop policy if exists memory_photos_secret on public.memory_photos;",
+  "drop policy if exists memory_places_own    on public.memory_places;",
+  "drop policy if exists memory_photos_own    on public.memory_photos;",
+  "",
+  "create policy memory_places_own on public.memory_places",
+  "  for all to anon, authenticated",
+  "  using      (user_id is not null and user_id = public.app_uid())",
+  "  with check (user_id is not null and user_id = public.app_uid());",
+  "",
+  "create policy memory_photos_own on public.memory_photos",
+  "  for all to anon, authenticated",
+  "  using      (user_id is not null and user_id = public.app_uid())",
+  "  with check (user_id is not null and user_id = public.app_uid());",
+  "",
+  "grant select, insert, update, delete on public.memory_places to anon, authenticated;",
+  "grant select, insert, update, delete on public.memory_photos to anon, authenticated;",
+  "",
+  "notify pgrst, 'reload schema';",
+  "",
+  "-- ============================================================",
+  "-- 跑完自检：三行应该都是 true",
+  "-- ============================================================",
+  "select 'app_uid 在没有 token 时认不出人（对的）' as 检查项,",
+  "       public.app_uid() is null as 通过",
+  "union all",
+  "select '账号相关函数都在',",
+  "       (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace",
+  "         where n.nspname = 'public'",
+  "           and p.proname in ('app_uid','app_register','app_login','app_me',",
+  "                             'app_logout','app_change_password','app_set_nickname','app_norm_phone')) = 8",
+  "union all",
+  "select '两张业务表的策略已换成按人隔离',",
+  "       (select count(*) from pg_policies",
+  "         where schemaname = 'public'",
+  "           and policyname in ('memory_places_own','memory_photos_own')) = 2;",
+  "",
+  "-- ============================================================",
+  "-- 以后可能用得上的管理语句（需要时单独跑，不用现在跑）",
+  "-- 如果报 crypt/gen_salt 函数不存在，就在函数名前面加 extensions.",
+  "-- ============================================================",
+  "-- 看有哪些人注册了：",
+  "--   select phone, nickname, created_at, last_login_at from public.app_users order by created_at;",
+  "-- 看每个人存了多少条：",
+  "--   select u.phone, count(m.id) from public.app_users u",
+  "--     left join public.memory_places m on m.user_id = u.id group by 1 order by 2 desc;",
+  "-- 帮人重置密码（顺手把他所有设备踢下线）：",
+  "--   update public.app_users set pass_hash = crypt('新密码', gen_salt('bf',10)) where phone = '13800138000';",
+  "--   delete from public.app_sessions where user_id = (select id from public.app_users where phone = '13800138000');",
+  "-- 不想再让新人注册：",
+  "--   revoke execute on function public.app_register(text,text,text) from anon;",
+  "-- 重新开放注册：",
+  "--   grant  execute on function public.app_register(text,text,text) to anon;",
+  "-- 删掉某个账号连同他的全部数据：",
+  "--   delete from public.app_users where phone = '13800138000';"
+].join("\n");
 
-function syncPanel(){
-  if(!S.secret){
-    modal("解锁云同步",
-      '<div class="crd"><h4>输入你那串共用密钥</h4><p>和记账站、组织架构站是同一把钥匙。不解锁也能用，数据只存在这台设备。</p></div>'+
-      '<div class="f"><label>密钥</label><input type="text" id="secIn" placeholder="粘贴 x-app-secret" autocomplete="off"></div>',
-      [{t:"先本地用",f:closeModal},{t:"解锁",p:true,f:function(){
-        var v=($("#secIn").value||"").trim(); if(!v) return;
-        setSync("busy");
-        fetch(SB_URL+"/rest/v1/rpc/verify_expense_secret",{method:"POST",
-          headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"x-app-secret":v,"Content-Type":"application/json"},body:"{}"})
-          .then(function(r){ return r.json(); })
-          .then(function(ok){
-            if(ok===true){ S.secret=v; localStorage.setItem(LS_SECRET,v); closeModal(); toast("已解锁"); bootstrapCloud(); }
-            else { setSync("locked"); toast("密钥不对"); }
-          }).catch(function(){ setSync("offline"); toast("连不上云端"); });
-      }}]);
-    return;
+/* ================= 账号（手机号 + 密码） ================= */
+function maskPhone(p){ p=String(p||""); return /^[0-9]{11}$/.test(p)?p.slice(0,3)+"****"+p.slice(7):p; }
+function saveAuth(){
+  try{ localStorage.setItem(LS_AUTH,JSON.stringify({token:S.token,uid:S.uid,phone:S.phone,nickname:S.nickname})); }catch(e){}
+}
+function clearAuth(){
+  S.token=""; S.uid=""; S.phone=""; S.nickname="";
+  try{ localStorage.removeItem(LS_AUTH); }catch(e){}
+}
+var AUTH_ERR={ phone_invalid:"手机号看着不对，得是 11 位大陆号码",
+               password_weak:"密码至少 6 位",
+               phone_taken:"这个手机号已经注册过了，直接登录就行",
+               bad_credentials:"手机号或密码不对",
+               too_many:"连着错太多次，等 15 分钟再试",
+               no_session:"登录状态失效了，重新登录一下" };
+function authErr(e){ return AUTH_ERR[e]||("没成功："+(e||"未知原因")); }
+
+/* 换账号（含退出）时，把内存里的东西和本地库整体切过去 */
+/* mig=true 只在切回游客库时用；刚登录完不能跑 migrate，否则默认时段会盖掉云端改过的名字 */
+function switchProfile(mig){
+  photoCache={}; S.nodes=[]; S.sel=null; S.q=""; S.tags=[]; S.per=[];
+  loadLocal();
+  if(mig) try{ migrate(); }catch(e){}
+  try{ renderAll(); }catch(e){}
+}
+function guestCount(){
+  try{
+    var d=JSON.parse(localStorage.getItem(LS_GUEST)||"null");
+    var a=d&&(d.nodes||d.places);
+    return Array.isArray(a)?a.length:0;
+  }catch(e){ return 0; }
+}
+function claimedBy(){ try{ return localStorage.getItem(LS_CLAIM)||""; }catch(e){ return ""; } }
+/* 登录之前记的东西还没归属，问一句要不要放进这个账号。只能认领一次：
+   同一批 id 在云端是全局主键，第二个账号再认领会撞别人的行 */
+function claimGuest(){
+  if(!S.uid) return Promise.resolve();
+  if(stateKey()===LS_GUEST) return Promise.resolve();
+  if(claimedBy()) return Promise.resolve();
+  var n=guestCount();
+  if(!n||S.nodes.length) return Promise.resolve();
+  return new Promise(function(done){
+    modal("本机有一份还没归属的回忆",
+      '<div class="crd"><h4>要放进这个账号吗</h4><p>这台设备上有 '+n+' 条登录之前记的内容。放进来会跟着账号同步到云端；不放也不会删，仍旧留在本机。</p></div>'+
+      '<div class="hint">这一步只能做一次，之后换别的账号登录就不再问了。</div>',
+      [{t:"先不放",f:function(){ closeModal(); done(); }},
+       {t:"放进来",p:true,f:function(){
+         closeModal();
+         try{ localStorage.setItem(stateKey(),localStorage.getItem(LS_GUEST)); }catch(e){}
+         try{ localStorage.setItem(LS_CLAIM,S.uid); }catch(e){}
+         loadLocal();
+         claimGuestPhotos().then(function(){ try{ renderAll(); }catch(e){} toast("已放进这个账号"); done(); });
+       }}]);
+  });
+}
+function claimGuestPhotos(){
+  if(!S.uid) return Promise.resolve();
+  return idbOpen("memory-map").then(function(src){
+    return new Promise(function(res){
+      var out=[],tx=src.transaction("photos","readonly"),rq=tx.objectStore("photos").openCursor();
+      rq.onsuccess=function(){ var c=rq.result; if(c){ out.push(c.value); c.continue(); } else res(out); };
+      rq.onerror=function(){ res(out); };
+    });
+  }).then(function(list){
+    if(!list.length) return null;
+    return list.reduce(function(pr,ph){ return pr.then(function(){ return idbPut(ph); }); },Promise.resolve());
+  }).catch(function(){ return null; });
+}
+function afterLogin(d,isNew){
+  S.token=d.token; S.uid=d.uid; S.phone=d.phone||""; S.nickname=d.nickname||"";
+  saveAuth();
+  switchProfile();
+  closeModal();
+  toast(isNew?"注册好了，欢迎":"登录成功");
+  claimGuest().then(function(){ bootstrapCloud(); });
+}
+function authPanel(mode){
+  var isReg=mode==="register";
+  var body=
+    '<div class="crd"><h4>'+(isReg?"手机号就是账号":"用手机号登录")+'</h4><p>每个账号的回忆各自存放，别人看不到你的。不登录也能用，数据只留在这台设备。</p></div>'+
+    '<div class="f"><label>手机号</label><input type="tel" id="auPhone" inputmode="numeric" autocomplete="username" placeholder="11 位手机号" value="'+esc(S.phone||"")+'"></div>'+
+    '<div class="f"><label>密码</label><input type="password" id="auPass" autocomplete="'+(isReg?"new-password":"current-password")+'" placeholder="'+(isReg?"至少 6 位":"密码")+'"></div>'+
+    (isReg?'<div class="f"><label>怎么称呼你（可不填）</label><input type="text" id="auNick" placeholder="昵称"></div>':'')+
+    '<div class="hint" id="auMsg">'+(isReg?"没有短信验证码，忘了密码得找站长重置，挑个记得住的。":"")+'</div>';
+  function say(t){ var m=$("#auMsg"); if(m) m.textContent=t; }
+  function submit(){
+    var phone=($("#auPhone").value||"").replace(/[^0-9]/g,"").replace(/^86(?=[0-9]{11}$)/,"");
+    var pass=$("#auPass").value||"";
+    var nick=(isReg&&$("#auNick"))?($("#auNick").value||""):"";
+    if(!/^1[3-9][0-9]{9}$/.test(phone)) return say(AUTH_ERR.phone_invalid);
+    if(pass.length<6) return say(AUTH_ERR.password_weak);
+    say(isReg?"正在注册…":"正在登录…");
+    setSync("busy");
+    var args=isReg?{p_phone:phone,p_password:pass,p_nickname:nick}:{p_phone:phone,p_password:pass};
+    rpc(isReg?"app_register":"app_login",args).then(function(r){
+      if(r.status===404){ setSync("needsetup"); setupModal(); return; }
+      var d=r.data;
+      if(!r.ok||!d){ setSync("offline"); return say("连不上云端，回头再试"); }
+      if(d.ok!==true){ setSync("locked"); return say(authErr(d.err)); }
+      afterLogin(d,isReg);
+    }).catch(function(){ setSync("offline"); say("连不上云端，回头再试"); });
   }
+  modal(isReg?"注册":"登录",body,
+    [{t:isReg?"我有账号":"注册新账号",f:function(){ authPanel(isReg?"login":"register"); }},
+     {t:isReg?"注册并登录":"登录",p:true,f:submit}]);
+  var pi=$("#auPhone"), pw=$("#auPass");
+  if(pi&&pw){
+    setTimeout(function(){ try{ (S.phone?pw:pi).focus(); }catch(e){} },60);
+    [pi,pw].forEach(function(el){ el.onkeydown=function(e){ if(e.key==="Enter") submit(); }; });
+  }
+}
+function pwPanel(){
+  modal("改密码",
+    '<div class="f"><label>当前密码</label><input type="password" id="pwOld" autocomplete="current-password"></div>'+
+    '<div class="f"><label>新密码</label><input type="password" id="pwNew" autocomplete="new-password" placeholder="至少 6 位"></div>'+
+    '<div class="hint" id="pwMsg">改完其他设备要重新登录，这台不用。</div>',
+    [{t:"算了",f:function(){ syncPanel(); }},
+     {t:"改密码",p:true,f:function(){
+       var o=$("#pwOld").value||"", n=$("#pwNew").value||"";
+       var m=$("#pwMsg");
+       if(n.length<6){ m.textContent=AUTH_ERR.password_weak; return; }
+       m.textContent="正在改…";
+       rpc("app_change_password",{p_old:o,p_new:n}).then(function(r){
+         var d=r.data;
+         if(!r.ok||!d) return void(m.textContent="连不上云端");
+         if(d.ok!==true) return void(m.textContent=authErr(d.err));
+         closeModal(); toast("密码改好了");
+       }).catch(function(){ m.textContent="连不上云端"; });
+     }}]);
+}
+function doLogout(){
+  closeModal();
+  if(S.token) rpc("app_logout",{}).catch(function(){});
+  clearAuth();
+  switchProfile(true);
+  setSync("local","未登录");
+  toast("已退出登录，本机数据留着");
+}
+function syncPanel(){
+  if(!S.token){ authPanel("login"); return; }
   if(S.cloud==="needsetup"){ setupModal(); return; }
-  modal("云同步",
-    '<div class="crd"><h4>\u72b6\u6001\uff1a'+esc($("#syncTxt").textContent)+'</h4><p>\u5171 '+anchors().length+' \u4e2a\u5730\u70b9/\u8def\u7ebf\u3001'+stories().length+' \u4e2a\u6545\u4e8b\u3001'+people().length+' \u4e2a\u4eba\u3002\u6570\u636e\u5b58\u5728\u4f60\u81ea\u5df1\u7684 Supabase \u91cc\uff0c\u6d4f\u89c8\u5668\u540c\u65f6\u7559\u4e00\u4efd\u79bb\u7ebf\u7f13\u5b58\u3002</p></div>'+
-    '<div class="hint">换设备打开这个网址、输入同一把密钥，回忆就都在。</div>',
-    [{t:"退出解锁",f:function(){ S.secret=""; localStorage.removeItem(LS_SECRET); setSync("locked"); closeModal(); toast("已退出云同步，本地数据保留"); }},
+  modal("我的账号",
+    '<div class="crd"><h4>'+esc(S.nickname||maskPhone(S.phone))+'</h4><p>状态：'+esc($("#syncTxt").textContent)+'。共 '+anchors().length+' 个地点/路线、'+stories().length+' 个故事、'+people().length+' 个人。换设备打开这个网址、用同一个手机号登录，回忆就都在。</p></div>'+
+    '<div class="hint">同一台设备上不同账号各存一份，退出登录不会删本机内容。</div>',
+    [{t:"退出登录",f:doLogout},
+     {t:"改密码",f:pwPanel},
      {t:"重新同步",p:true,f:function(){ closeModal(); bootstrapCloud(); }}]);
 }
 function setupModal(){
   modal("云端还差一步",
-    '<div class="crd"><h4>建两张表就好</h4><p>复制下面这段 SQL，去 Supabase 控制台的 SQL Editor 粘贴运行一次。之后所有设备就都能看到同一份回忆了。</p></div>'+
+    '<div class="crd"><h4>去 Supabase 跑一次 SQL</h4><p>这段 SQL 建好账号表和两张数据表，并把权限改成「每个账号只看得到自己的数据」。复制下去，在 Supabase 控制台的 SQL Editor 里粘贴运行一次，只需要跑这一次。</p></div>'+
     '<div class="sql" id="sqlBox">'+esc(SETUP_SQL)+'</div>'+
-    '<div class="hint">运行完回来点「我建好了」。在此之前照片和回忆都只存在这台设备上。</div>',
-    [{t:"复制 SQL",f:function(){ copyText(SETUP_SQL); }},{t:"我建好了",p:true,f:function(){ closeModal(); bootstrapCloud(); }}]);
+    '<div class="hint">跑完回来点「我跑好了」。在此之前，记的东西只存在这台设备上。</div>',
+    [{t:"复制 SQL",f:function(){ copyText(SETUP_SQL); }},
+     {t:"我跑好了",p:true,f:function(){ closeModal(); if(S.token) bootstrapCloud(); else authPanel("login"); }}]);
+}
+/* 页面打开时校验一下手上的 token 还有效没 */
+function bootAuth(){
+  if(!S.token){ setSync("local","未登录"); return; }
+  setSync("busy");
+  rpc("app_me",{}).then(function(r){
+    if(r.status===404){ setSync("needsetup"); promptSetup(); return; }
+    var d=r.data;
+    if(!r.ok||!d){ setSync("offline"); return; }
+    if(d.ok!==true){
+      clearAuth(); switchProfile(true); setSync("locked"); toast("登录过期了，重新登录一下"); return;
+    }
+    S.phone=d.phone||S.phone; S.nickname=d.nickname||""; saveAuth();
+    bootstrapCloud();
+  }).catch(function(){ setSync("offline"); });
 }
 var setupShown=false;
 function promptSetup(){
@@ -2812,13 +3332,13 @@ migrate();
 buildBase();
 renderAll();
 fitIfFirst();
-setSync(S.secret?"busy":"local");
-if(S.secret) bootstrapCloud(); else setSync("local","本地");
+bootAuth();
 if(!anchors().length){
   setTimeout(function(){
+    if($("#modal").classList.contains("on")) return;   /* 别盖掉这会儿正开着的弹窗 */
     modal("\u8fd9\u662f\u4f60\u7684\u56de\u5fc6\u5730\u56fe",
       '<div class="crd"><h4>\u600e\u4e48\u7528</h4><p>1\u3000\u53f3\u4e0b\u89d2\u300c\uff0b\u300d\uff1a\u6807\u4e00\u4e2a\u5730\u70b9\u3001\u753b\u4e00\u6761\u8def\u7ebf\u3001\u8bb0\u4e00\u4e2a\u6545\u4e8b\u3001\u6dfb\u4e00\u4e2a\u4eba\u3002<br>2\u3000\u5730\u70b9\u548c\u8def\u7ebf\u53ef\u4ee5\u6302\u591a\u4e2a\u6545\u4e8b\uff0c\u6545\u4e8b\u91cc\u5199\u65f6\u95f4\u3001\u4eba\u548c\u7167\u7247\u3002<br>3\u3000\u5e95\u90e8\u5207\u5230\u300c\u65f6\u5149\u673a\u300d\uff0c\u628a\u6ed1\u5757\u5f80\u5de6\u62d6 \u2014\u2014 2014 \u5e74\u4ee5\u6765\u7684\u536b\u661f\u5f71\u50cf\u4e00\u5e74\u5e74\u5012\u56de\u53bb\u3002</p></div>'+
-      '<div class="hint">想在手机和电脑上看同一份回忆，点左上角状态按钮解锁云同步。</div>',
+      '<div class="hint">想在手机和电脑上看同一份回忆，点左上角状态按钮，用手机号登录。</div>',
       [{t:"知道了",p:true,f:closeModal}]);
   },700);
 }
