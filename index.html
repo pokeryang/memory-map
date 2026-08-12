@@ -855,6 +855,7 @@ function flushOutbox(){
       rq.onsuccess=function(){ if(rq.result) pushPhoto(rq.result); }; }).catch(function(){}); }
   });
 }
+var _claimTried=false;
 function bootstrapCloud(){
   if(!S.token){ setSync("locked"); return Promise.resolve(); }
   setSync("busy");
@@ -865,20 +866,35 @@ function bootstrapCloud(){
       else setSync("offline");
       return;
     }
-    var cloud={}; r.data.forEach(function(row){ var p=nodeOf(row); cloud[p.id]=p; });
-    var local={}; S.nodes.forEach(function(p){ local[p.id]=p; });
-    var merged={}, localOnly=[];
-    Object.keys(local).forEach(function(id){ merged[id]=local[id]; if(!cloud[id]) localOnly.push(local[id]); });
-    Object.keys(cloud).forEach(function(id){
-      var c=cloud[id], l=local[id];
-      merged[id]=(l&&(l.updatedAt||0)>(c.updatedAt||0))?l:c;
-    });
-    S.nodes=Object.keys(merged).map(function(k){ return merged[k]; });
-    migrate();
-    saveLocal(); setSync("synced"); renderAll(); fitIfFirst();
-    localOnly.forEach(pushNode);
-    flushOutbox();
+    /* 这个账号云端一条都没有：可能是共享密钥时代留下的无主老数据，试着认领一次 */
+    if(!r.data.length && !_claimTried){
+      _claimTried=true;
+      return rpc("app_claim_legacy",{}).then(function(cr){
+        var d=cr&&cr.data;
+        if(d&&d.ok===true&&((d.places||0)+(d.photos||0))>0){
+          toast("云端 "+(d.places||0)+" 条老回忆已归到这个账号");
+          return bootstrapCloud();
+        }
+        return mergeCloud(r.data);
+      }).catch(function(){ return mergeCloud(r.data); });
+    }
+    return mergeCloud(r.data);
   }).catch(function(e){ console.warn(e); setSync("offline"); });
+}
+function mergeCloud(rows){
+  var cloud={}; rows.forEach(function(row){ var p=nodeOf(row); cloud[p.id]=p; });
+  var local={}; S.nodes.forEach(function(p){ local[p.id]=p; });
+  var merged={}, localOnly=[];
+  Object.keys(local).forEach(function(id){ merged[id]=local[id]; if(!cloud[id]) localOnly.push(local[id]); });
+  Object.keys(cloud).forEach(function(id){
+    var c=cloud[id], l=local[id];
+    merged[id]=(l&&(l.updatedAt||0)>(c.updatedAt||0))?l:c;
+  });
+  S.nodes=Object.keys(merged).map(function(k){ return merged[k]; });
+  migrate();
+  saveLocal(); setSync("synced"); renderAll(); fitIfFirst();
+  localOnly.forEach(pushNode);
+  flushOutbox();
 }
 function loadPhotos(pid){
   var p=byId(pid), want=p?(p.photoCount||0):0;
@@ -2954,6 +2970,44 @@ var SETUP_SQL=[
   "grant select, insert, update, delete on public.memory_places to anon, authenticated;",
   "grant select, insert, update, delete on public.memory_photos to anon, authenticated;",
   "",
+  "-- ============================================================",
+  "-- 11) 老数据认领：以前共享密钥时代写进去的行 user_id 是空的，",
+  "--     换成按人隔离之后谁都看不见。这里让「第一个注册、并且当时还只有他一个账号」",
+  "--     的人（也就是站长自己）把这些无主数据收进自己账号。",
+  "--     前端在账号云端为空时会自动调一次，不用手动跑。",
+  "-- ============================================================",
+  "create or replace function public.app_claim_legacy()",
+  "returns json",
+  "language plpgsql",
+  "security definer",
+  "set search_path = public, extensions",
+  "as $fn$",
+  "declare v_id uuid; v_first uuid; v_cnt int; v_pl int; v_ph int;",
+  "begin",
+  "  v_id := public.app_uid();",
+  "  if v_id is null then",
+  "    return json_build_object('ok', false, 'err', 'no_session');",
+  "  end if;",
+  "",
+  "  select count(*) into v_cnt from public.app_users;",
+  "  select u.id into v_first from public.app_users u order by u.created_at, u.id limit 1;",
+  "",
+  "  -- 只有「第一个注册的账号」且此刻全站只有这一个账号时才允许认领，",
+  "  -- 避免后来注册的陌生人把站长的老数据拿走",
+  "  if v_cnt <> 1 or v_first is distinct from v_id then",
+  "    return json_build_object('ok', false, 'err', 'not_owner');",
+  "  end if;",
+  "",
+  "  update public.memory_places set user_id = v_id where user_id is null;",
+  "  get diagnostics v_pl = row_count;",
+  "  update public.memory_photos set user_id = v_id where user_id is null;",
+  "  get diagnostics v_ph = row_count;",
+  "",
+  "  return json_build_object('ok', true, 'places', v_pl, 'photos', v_ph);",
+  "end",
+  "$fn$;",
+  "grant execute on function public.app_claim_legacy() to anon, authenticated;",
+  "",
   "notify pgrst, 'reload schema';",
   "",
   "-- ============================================================",
@@ -2966,7 +3020,8 @@ var SETUP_SQL=[
   "       (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace",
   "         where n.nspname = 'public'",
   "           and p.proname in ('app_uid','app_register','app_login','app_me',",
-  "                             'app_logout','app_change_password','app_set_nickname','app_norm_phone')) = 8",
+  "                             'app_logout','app_change_password','app_set_nickname',",
+  "                             'app_norm_phone','app_claim_legacy')) = 9",
   "union all",
   "select '两张业务表的策略已换成按人隔离',",
   "       (select count(*) from pg_policies",
@@ -2977,6 +3032,9 @@ var SETUP_SQL=[
   "-- 以后可能用得上的管理语句（需要时单独跑，不用现在跑）",
   "-- 如果报 crypt/gen_salt 函数不存在，就在函数名前面加 extensions.",
   "-- ============================================================",
+  "-- 万一自动认领没生效（比如别人先注册了），手动把无主的老数据划给某个手机号：",
+  "--   update public.memory_places set user_id = (select id from public.app_users where phone = '13800138000') where user_id is null;",
+  "--   update public.memory_photos set user_id = (select id from public.app_users where phone = '13800138000') where user_id is null;",
   "-- 看有哪些人注册了：",
   "--   select phone, nickname, created_at, last_login_at from public.app_users order by created_at;",
   "-- 看每个人存了多少条：",
