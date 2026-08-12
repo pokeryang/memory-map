@@ -140,21 +140,34 @@ button{cursor:pointer;border:0;background:none}
 .tl{position:absolute;z-index:620;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));
   width:min(1020px,calc(100vw - 24px));padding:11px 14px 12px}
 .tl-r1{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-.tl-r1 .seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px}
-.tl-r1 .seg button{padding:6px 14px;border-radius:999px;font-size:12.5px;color:var(--ink2)}
-.tl-r1 .seg button.on{background:var(--accent);color:#1a1512;font-weight:600}
-.tl-when{margin-left:auto;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.tl-lab{font-size:11px;letter-spacing:1.2px;color:var(--ink3);padding:2px 0}
+.tl-when{margin-left:auto;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums;text-align:right}
 .tl-when b{color:var(--accent);font-size:16px;font-weight:600;letter-spacing:.4px}
 .tl-when small{display:block;font-size:10.5px;color:var(--ink3);line-height:1.3;margin-top:1px}
 .tl-body{display:none;margin-top:11px}
 .tl-body.open{display:block}
 .yrs{display:flex;gap:3px;overflow:auto;padding-bottom:7px;scrollbar-width:none}
 .yrs::-webkit-scrollbar{display:none}
-.yrs button{padding:4px 9px;border-radius:7px;font-size:11.5px;color:var(--ink3);flex:1 0 auto;min-width:46px;text-align:center}
+.yrs button{padding:4px 9px;border-radius:7px;font-size:11.5px;color:var(--ink3);flex:1 0 auto;min-width:46px;text-align:center;line-height:1.25}
 .yrs button:hover{color:var(--ink)}
 .yrs button.on{background:var(--bg3);color:var(--accent);font-weight:600}
 .yrs button.off{opacity:.3}
 .yrs button.off:hover{opacity:.5;color:var(--ink3)}
+.yrs button .nw{display:block;font-size:9px;letter-spacing:.5px;color:var(--ink3);font-weight:400}
+.yrs button.on .nw{color:var(--accent)}
+.provs{display:flex;gap:6px;overflow:auto;padding:2px 0 8px;scrollbar-width:none;border-bottom:1px solid var(--line);margin-bottom:8px}
+.provs::-webkit-scrollbar{display:none}
+.provs button{display:flex;align-items:center;gap:6px;flex:0 0 auto;padding:5px 11px;border-radius:999px;
+  border:1px solid var(--line);background:var(--bg);color:var(--ink2);font-size:11.5px;white-space:nowrap}
+.provs button .sw{width:11px;height:11px;border-radius:3px;flex:0 0 auto;border:1px solid rgba(255,255,255,.22)}
+.provs button:hover{color:var(--ink);border-color:#4d423a}
+.provs button.on{background:var(--accent);border-color:var(--accent);color:#1a1512;font-weight:600}
+.provs button.off{opacity:.32;cursor:not-allowed}
+.provs button.off:hover{color:var(--ink2);border-color:var(--line)}
+.caps{display:flex;align-items:center;gap:6px;overflow:auto;scrollbar-width:none;margin:-2px 0 4px}
+.caps::-webkit-scrollbar{display:none}
+.caps .cl{font-size:10.5px;color:var(--ink3);flex:0 0 auto}
+.caps button{flex:0 0 auto}
 .sld{display:flex;align-items:center;gap:10px;margin-top:2px}
 .sld input[type=range]{flex:1;min-width:0;-webkit-appearance:none;appearance:none;height:22px;background:none}
 .sld input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:#3f362f}
@@ -190,12 +203,17 @@ button{cursor:pointer;border:0;background:none}
 .gs-list .it .km{font-size:11px;color:var(--ink3);flex:0 0 auto}
 .gs-tip{padding:11px 13px;font-size:11.5px;color:var(--ink3);line-height:1.7}
 
-/* ---------- read-only fields (detail mirrors editor) ---------- */
-.ro{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+/* ---------- read-only fields (detail mirrors editor, but never looks editable) ---------- */
+.ro{background:none;border:0;border-radius:0;padding:1px 0 0;
   font-size:13.5px;line-height:1.8;white-space:pre-wrap;word-break:break-word;color:#e8e0d6}
-.ro.big{font-size:14px;line-height:1.95}
+.ro.big{font-size:15px;line-height:1.95;color:#f1e9de}
 .ro.em{color:var(--ink3)}
-.tg.st{cursor:default}
+.sh-bd .f.rof{margin-bottom:13px;padding-bottom:11px;border-bottom:1px solid rgba(58,50,44,.55)}
+.sh-bd .f.rof:last-child{border-bottom:0;padding-bottom:0}
+.tg.st{cursor:default;border-color:transparent;background:rgba(255,255,255,.05);color:var(--ink)}
+.tg.st:hover{border-color:transparent}
+.tg.lk{cursor:pointer}
+.tg.lk:hover{border-color:var(--line)}
 
 /* ---------- route: color / segments / playback ---------- */
 .swatch{display:flex;flex-wrap:wrap;gap:8px}
@@ -211,12 +229,14 @@ button{cursor:pointer;border:0;background:none}
 .segrow .ms button.on{color:#1a1512;font-weight:600;border-color:transparent}
 .segrow input{width:100%;margin-top:7px;background:var(--bg2);border:1px solid var(--line);
   border-radius:8px;padding:7px 10px;outline:none;font-size:12.5px}
-.seglist .r{display:flex;gap:9px;align-items:center;padding:8px 10px;border:1px solid var(--line);
-  border-radius:10px;margin-bottom:6px;background:var(--bg)}
+.seglist .r{display:flex;gap:9px;align-items:center;padding:5px 0;border:0;
+  border-radius:0;margin-bottom:0;background:none}
 .seglist .r .e{font-size:15px;flex:0 0 auto}
 .seglist .r .t{flex:1;min-width:0;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .seglist .r .k{font-size:11px;color:var(--ink3);flex:0 0 auto}
-.seglist .r.on{border-color:var(--accent)}
+.seglist .r.on{color:var(--accent)}
+.swatch.st button{width:16px;height:16px;border-width:0;box-shadow:none}
+.swatch.st button.on{border-color:transparent}
 .segpin{display:flex;align-items:center;justify-content:center;width:25px;height:25px;margin-left:-12.5px;margin-top:-12.5px;
   border-radius:50%;background:rgba(18,16,14,.9);border:1.5px solid rgba(255,255,255,.7);font-size:12px;
   box-shadow:0 2px 8px rgba(0,0,0,.5)}
@@ -377,8 +397,8 @@ button{cursor:pointer;border:0;background:none}
 </div>
 
 <div class="tr">
-  <button class="chip" id="lyrBtn"><span class="i">◈</span><span>图层</span></button>
-  <div class="panel lyr" id="lyrPanel"></div>
+  <button class="chip" id="optBtn"><span class="i">⚙</span><span>显示</span></button>
+  <div class="panel lyr" id="optPanel"></div>
 </div>
 
 <div class="panel drawer hide" id="drawer">
@@ -418,21 +438,20 @@ button{cursor:pointer;border:0;background:none}
 
 <div class="panel tl" id="tl">
   <div class="tl-r1">
-    <div class="seg">
-      <button id="mNow" class="on">现在</button>
-      <button id="mPast">时光机</button>
-    </div>
+    <span class="tl-lab" id="yrLab">选年份</span>
     <button class="ib" id="cmpBtn" title="卷帘对比">◫</button>
     <div class="tl-when" id="whenTxt">最新影像</div>
   </div>
-  <div class="tl-body" id="tlBody">
+  <div class="tl-body open" id="tlBody">
     <div class="yrs" id="yrs"></div>
-    <div class="sld">
+    <div class="sld" id="sldRow">
       <button class="ib" id="prevB">‹</button>
       <input type="range" id="rng" min="0" max="0" value="0">
       <button class="ib" id="nextB">›</button>
       <button class="ib" id="playB">▶</button>
     </div>
+    <div class="provs" id="provs"></div>
+    <div class="caps" id="capRow"></div>
     <div class="tl-r3">
       <button class="mini" id="onlyChg">只看有变化的版本</button>
       <button class="mini" id="syncPts">回忆随时间浮现</button>
@@ -515,31 +534,33 @@ function defMove(meters){
 
 var ESRI_ATTR='影像 © Esri, Maxar, Earthstar Geographics';
 var LAYERS=[
-  {id:"esri",  g:"wgs", n:"现在 · 高清影像", sub:"Esri World Imagery",
+  {id:"esri",  g:"wgs", n:"现在 · 高清影像", t:"Esri 高清", sub:"Esri World Imagery",
    url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
    meta:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer",
    o:{maxZoom:21,maxNativeZoom:18,attribution:ESRI_ATTR}, sw:"#3f5a3a"},
-  {id:"gsat",  g:"wgs", n:"最清 · Google 卫星", sub:"原图能到 20 级，比 Esri 细 4 倍；需要能上 Google 的网络",
+  {id:"gsat",  g:"wgs", n:"最清 · Google 卫星", t:"Google", sub:"原图能到 20 级，比 Esri 细 4 倍；需要能上 Google 的网络",
    url:"https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
-   shotNote:"原图最深 20 级，约 0.13 米一像素",
+   shotNote:"Google 不公开拍摄时间 · 原图最深 20 级，约 0.13 米一像素",
    o:{maxZoom:21,maxNativeZoom:20,subdomains:["0","1","2","3"],attribution:'影像 © Google'}, sw:"#2f4a34"},
-  {id:"wb",    g:"wgs", n:"时光机 · 历史影像", sub:"Esri Wayback 2014–2026", wayback:true,
+  {id:"wb",    g:"wgs", n:"时光机 · 历史影像", t:"时光机", sub:"Esri Wayback 2014–2026", wayback:true,
    o:{maxZoom:21,maxNativeZoom:18,subdomains:["a","b"],attribution:ESRI_ATTR+' · Wayback'}, sw:"#5b4a35"},
-  {id:"bing",  g:"wgs", n:"另一家 · 微软影像", sub:"Bing 卫星，拍摄时间常和 Esri 不同", bing:true,
+  {id:"bing",  g:"wgs", n:"另一家 · 微软影像", t:"Bing", sub:"Bing 卫星，拍摄时间常和 Esri 不同", bing:true,
    url:"https://ecn.t{s}.tiles.virtualearth.net/tiles/a{q}.jpeg?g=1",
-   shotNote:"Bing 原图最深 19 级",
+   shotNote:"Bing 不公开拍摄时间 · 原图最深 19 级",
    o:{maxZoom:21,maxNativeZoom:19,subdomains:["0","1","2","3"],attribution:'影像 © Microsoft Bing'}, sw:"#35485b"},
-  {id:"eox",   g:"wgs", n:"年度影像 · 无云", sub:"Sentinel-2 cloudless 2017–2025", eox:true,
+  {id:"eox",   g:"wgs", n:"年度影像 · 无云", t:"年度无云", sub:"Sentinel-2 cloudless 2017–2025", eox:true,
    o:{maxZoom:19,maxNativeZoom:17,attribution:'Sentinel-2 cloudless © EOX IT Services'}, sw:"#33513f"},
-  {id:"street",g:"wgs", n:"街道地图", sub:"Esri World Street Map",
+  {id:"street",g:"wgs", n:"街道地图", t:"街道图", vec:true, sub:"Esri World Street Map",
    url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+   shotNote:"街道地图，不是照片，没有拍摄时间",
    o:{maxZoom:20,maxNativeZoom:19,attribution:'© Esri'}, sw:"#d8cfc2"},
-  {id:"amap",  g:"gcj", n:"高德街道 · 中文",  sub:"地名最全，坐标已自动纠偏",
+  {id:"amap",  g:"gcj", n:"高德街道 · 中文",  t:"高德街道", vec:true, sub:"地名最全，坐标已自动纠偏",
    url:"https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+   shotNote:"街道地图，不是照片，没有拍摄时间",
    o:{maxZoom:20,maxNativeZoom:18,subdomains:["1","2","3","4"],attribution:'© 高德地图'}, sw:"#cfd8c2"},
-  {id:"amapst",g:"gcj", n:"高德卫星", sub:"含中文标注参考",
+  {id:"amapst",g:"gcj", n:"高德卫星", t:"高德卫星", sub:"含中文标注参考",
    url:"https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
-   shotNote:"高德原图最深 18 级",
+   shotNote:"高德不公开拍摄时间 · 原图最深 18 级",
    o:{maxZoom:20,maxNativeZoom:18,subdomains:["1","2","3","4"],attribution:'© 高德地图'}, sw:"#40513a"}
 ];
 var LBL_URL="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}";
@@ -599,7 +620,7 @@ function ll2tile(lat,lng,z){
 }
 
 /* ================= state ================= */
-var S={ nodes:[], baseId:"esri", labels:false, mode:"now", relIdx:WB.length-1,
+var S={ nodes:[], baseId:"esri", labels:false, year:(new Date()).getFullYear(), relIdx:WB.length-1,
         cmp:false, cmpPct:50, onlyChg:true, syncPts:false, sharp:false,
         tab:"place", tags:[], per:[], q:"", sel:null,
         secret:localStorage.getItem(LS_SECRET)||"", cloud:"local", eoxYear:2019 };
@@ -931,10 +952,11 @@ function setBase(id){
     var t=(now==="gcj")?wgs2gcj(c.lat,c.lng):gcj2wgs(c.lat,c.lng);
     map.setView(t,map.getZoom(),{animate:false});
   }
-  if(id!=="wb"&&S.mode==="past"&&id!=="eox"){ /* keep mode but base is not historic */ }
-  buildBase(); renderLayerPanel(); renderMarkers(); renderList();
-  if(id==="wb"&&S.mode==="past") scanSoon();
+  buildBase(); renderOptPanel(); renderMarkers(); renderList();
+  scanSoon();
 }
+/* 历史态：底图是时光机或年度无云影像 */
+function pastMode(){ return S.baseId==="wb"||S.baseId==="eox"; }
 
 /* ================= curtain compare ================= */
 function syncCmp(){
@@ -984,7 +1006,7 @@ function pinHtml(n,sel,dim){
     '<div class="bub" style="background:'+nodeColor(n)+'">'+coverStyle(n)+'</div>'+
     (nm?'<div class="lbl">'+esc(nm)+(k?(" \u00b7 "+k+"\u4e8b"):"")+'</div>':'')+'</div>';
 }
-function pastDate(){ return S.mode==="past"?(S.baseId==="eox"?(S.eoxYear+"-12-31"):WB[S.relIdx][0]):null; }
+function pastDate(){ return pastMode()?(S.baseId==="eox"?(S.eoxYear+"-12-31"):WB[S.relIdx][0]):null; }
 function nodeDate(n){
   if(!n) return "";
   if(n.kind==="story") return n.time||"";
@@ -993,7 +1015,7 @@ function nodeDate(n){
   return "";
 }
 function isFuture(n){
-  if(!S.syncPts||S.mode!=="past") return false;
+  if(!S.syncPts||!pastMode()) return false;
   var d=pastDate(); if(!d) return false;
   var s=nodeDate(n); if(!s) return false;
   return String(s).slice(0,10) > d;
@@ -1062,7 +1084,7 @@ function routeSig(n,sel,dim){
 function buildRouteLayer(n,sel,dim){
   var lls=routeLL(n), segs=normSegs(n.path||[],n.segs||[]), col=routeColor(n);
   var g=L.featureGroup(), mid=Math.floor(Math.max(0,lls.length-2)/2);
-  var open=function(){ if(busyPick()) return; openDetail(n.id); };
+  var open=function(){ if(busyPick()) return; openDetail(n.id); flyTo(n); };
   if(lls.length<2){
     var one=L.circleMarker(lls[0],{radius:6,color:col,fillColor:col,fillOpacity:.9,opacity:dim?.3:.95});
     one.on("click",open); g.addLayer(one); return g;
@@ -1103,7 +1125,7 @@ function renderMarkers(){
       if(lay){ lay.setLatLng(ll); lay.setIcon(icon); }
       else{
         lay=L.marker(ll,{icon:icon,riseOnHover:true}).addTo(map);
-        lay.on("click",function(){ if(busyPick()) return; openDetail(n.id); });
+        lay.on("click",function(){ if(busyPick()) return; openDetail(n.id); flyTo(n); });
       }
       lay.setZIndexOffset(sel?900:0);
     }
@@ -1168,31 +1190,27 @@ function playRoute(id){
   play.raf=requestAnimationFrame(frame);
 }
 
-/* ================= layer panel ================= */
-function renderLayerPanel(){
-  var w=$("#lyrPanel"); w.innerHTML="";
-  var groups=[["wgs","真实坐标 · 卫星/街道"],["gcj","中国地图 · 高德"]];
-  groups.forEach(function(g){
-    w.appendChild(ce("div","grp",g[1]));
-    LAYERS.filter(function(d){ return d.g===g[0]; }).forEach(function(d){
-      var b=ce("button",(S.baseId===d.id?"on":""),
-        '<span class="sw" style="background:'+d.sw+'"></span><span><span>'+esc(d.n)+'</span><br><span style="font-size:10.5px;color:var(--ink3)">'+esc(d.sub)+'</span></span>');
-      b.onclick=function(){ setBase(d.id); if(d.id==="wb"||d.id==="eox"){ setMode("past"); } else if(S.mode==="past") setMode("now"); };
-      w.appendChild(b);
-    });
-  });
-  w.appendChild(ce("div","sep"));
+/* ================= 显示选项面板（底图切换已挪到底部厂商 tab） ================= */
+function renderOptPanel(){
+  var w=$("#optPanel"); w.innerHTML="";
+  w.appendChild(ce("div","grp","显示选项"));
   var t=ce("div","tog",'<span>地名标注叠加</span>');
   var sw=ce("span","sws"+(S.labels?" on":""),"<i></i>"); t.appendChild(sw);
-  t.onclick=function(){ S.labels=!S.labels; saveLocal(); syncLabels(); renderLayerPanel(); };
+  t.onclick=function(){ S.labels=!S.labels; saveLocal(); syncLabels(); renderOptPanel(); };
   if(activeGroup()!=="wgs"){ t.style.opacity=.4; t.onclick=function(){ toast("高德底图自带中文标注"); }; }
   w.appendChild(t);
   var sh=ce("div","tog",'<span>放大后锐化增强<br><span style="font-size:10.5px;color:var(--ink3)">让糊掉的老照片边缘硬一点</span></span>');
   var shs=ce("span","sws"+(S.sharp?" on":""),"<i></i>"); sh.appendChild(shs);
-  sh.onclick=function(){ S.sharp=!S.sharp; saveLocal(); applySharp(); renderLayerPanel(); };
+  sh.onclick=function(){ S.sharp=!S.sharp; saveLocal(); applySharp(); renderOptPanel(); };
   w.appendChild(sh);
+  w.appendChild(ce("div","sep"));
   var loc=ce("button","",'<span class="sw" style="background:#2a3f52;display:flex;align-items:center;justify-content:center">⌖</span><span>定位到我现在的位置</span>');
   loc.onclick=locateMe; w.appendChild(loc);
+  var d=defOf(S.baseId);
+  var src=ce("div","grp");
+  src.style.cssText="padding-top:9px;line-height:1.65;text-transform:none;letter-spacing:0";
+  src.textContent="当前底图："+d.n+"（"+d.sub+"）";
+  w.appendChild(src);
 }
 function locateMe(){
   if(!navigator.geolocation) return toast("这台设备不支持定位");
@@ -1295,48 +1313,145 @@ function applySharp(){
 /* ================= timeline ================= */
 var relList=WB.map(function(_,i){ return i; });  /* indices into WB currently shown */
 var playTimer=null, tmCache={}, wbNote=null;
-function setMode(m){
-  S.mode=m;
-  $("#mNow").classList.toggle("on",m==="now");
-  $("#mPast").classList.toggle("on",m==="past");
-  $("#tlBody").classList.toggle("open",m==="past");
-  if(m==="past"){
-    if(S.baseId!=="wb"&&S.baseId!=="eox") setBase("wb");
-    scanSoon();
-  }else{
-    stopPlay(); S.cmp=false;
-    if(S.baseId==="wb"||S.baseId==="eox") setBase("esri"); else syncCmp();
+/* ---- 年份优先：先选一年，再挑这一年有影像的厂商 ---- */
+var NOW_Y=(new Date()).getFullYear();
+var LIVE_PREF=["esri","gsat","bing","amapst","street","amap"];
+function isLive(d){ return !d.wayback&&!d.eox; }
+function provAvail(id,y,ym){
+  var d=defOf(id); y=+y;
+  if(d.wayback){ ym=ym||yearMap(); return (String(y) in ym.m); }
+  if(d.eox) return EOX_YEARS.indexOf(y)>=0;
+  return y===NOW_Y;                       /* 各家实时底图只代表"现在" */
+}
+function yearProvs(y,ym){ ym=ym||yearMap(); return LAYERS.filter(function(d){ return provAvail(d.id,y,ym); }); }
+function nearEox(y){
+  var best=EOX_YEARS[0];
+  EOX_YEARS.forEach(function(x){ if(Math.abs(x-y)<Math.abs(best-y)) best=x; });
+  return best;
+}
+function setYear(y,prefer){
+  y=+y;
+  var ym=yearMap(), av=yearProvs(y,ym);
+  if(!av.length){
+    if(ym.cap) toast("这块地方 "+y+" 年没拍到影像");
+    else toast(y+" 年还没扫描，稍等一下或换个位置");
+    return;
   }
-  renderTimeline(); renderMarkers(); renderList();
+  var want=prefer||(provAvail(S.baseId,y,ym)?S.baseId:null);
+  if(!want){
+    var order=(y===NOW_Y)?LIVE_PREF.concat(["wb","eox"]):["wb","eox"];
+    for(var i=0;i<order.length;i++){ if(provAvail(order[i],y,ym)){ want=order[i]; break; } }
+    if(!want) want=av[0].id;
+  }
+  S.year=y;
+  useProv(want,ym);
+}
+function setProvider(id){
+  var ym=yearMap();
+  if(!provAvail(id,S.year,ym)){ toast(defOf(id).t+"没有 "+S.year+" 年的影像"); return; }
+  useProv(id,ym);
+}
+function useProv(id,ym){
+  ym=ym||yearMap();
+  var d=defOf(id);
+  if(d.eox) S.eoxYear=(EOX_YEARS.indexOf(S.year)>=0)?S.year:nearEox(S.year);
+  if(d.wayback){ var i=ym.m[String(S.year)]; if(i!=null) S.relIdx=i; }
+  if(id!==S.baseId){
+    stopPlay();
+    if(isLive(d)) S.cmp=false;
+    setBase(id); renderTimeline();
+  }else refreshWB();
+}
+/* 跳到有历史影像的最近一年（详情页「看这里的过去」） */
+function goWayback(){
+  var ym=yearMap(), ys=Object.keys(ym.m).map(Number).sort(function(a,b){ return a-b; });
+  ys=ys.filter(function(y){ return y!==NOW_Y; });
+  if(!ys.length) return setProvider("wb");
+  setYear(ys[ys.length-1],"wb");
+}
+function renderYears(ym){
+  var yrs=$("#yrs"), span=yearSpan(ym);
+  var lo=Math.min(span[0],EOX_YEARS[0]), hi=Math.max(span[1],NOW_Y);
+  yrs.innerHTML="";
+  for(var y=lo;y<=hi;y++) yrs.appendChild(yearBtn(y,ym));
+  var on=yrs.querySelector("button.on");
+  if(on){ try{ yrs.scrollLeft=Math.max(0,on.offsetLeft-yrs.clientWidth/2+on.offsetWidth/2); }catch(e){} }
+}
+function renderProvs(ym){
+  var w=$("#provs"); w.innerHTML="";
+  var av=[], no=[];
+  LAYERS.forEach(function(d){ (provAvail(d.id,S.year,ym)?av:no).push(d); });
+  av.concat(no).forEach(function(d){
+    var ok=(no.indexOf(d)<0);
+    var b=ce("button",(S.baseId===d.id?"on":"")+(ok?"":" off"),
+      '<span class="sw" style="background:'+d.sw+'"></span><span>'+esc(d.t)+'</span>');
+    b.title=d.n+" · "+d.sub;
+    b.setAttribute("data-p",d.id);
+    b.onclick=function(){ if(ok) setProvider(d.id); else toast(d.t+"没有 "+S.year+" 年的影像"); };
+    w.appendChild(b);
+  });
+}
+/* 同一年拍到过好几张：直接列出来点 */
+function renderCaps(){
+  var w=$("#capRow"); w.innerHTML=""; w.style.display="none";
+  if(S.baseId!=="wb") return;
+  var seen={}, items=[];
+  relList.forEach(function(i){
+    var cap=capOf(i), dt=cap||WB[i][0];
+    if(String(dt).slice(0,4)!==String(S.year)) return;
+    if(seen[dt]) return;
+    seen[dt]=1; items.push({i:i,d:dt,cap:!!cap});
+  });
+  if(items.length<2) return;
+  items=items.slice(0,12);
+  w.style.display="flex";
+  w.appendChild(ce("span","cl",items[0].cap?"这一年拍到的：":"这一年的版本："));
+  items.forEach(function(x){
+    var b=ce("button","mini"+(S.relIdx===x.i?" on":""),esc(x.d.slice(5)));
+    b.onclick=function(){ jumpToRel(x.i); };
+    w.appendChild(b);
+  });
+}
+/* 实时厂商的时间说明：有真实实拍日期就报日期，没有就老实说不公开 */
+function liveWhen(d){
+  var big=(shotInfo&&shotInfo.date)?('<b>'+shotInfo.date+'</b> 拍的')
+        :(d.vec?'<b>街道地图</b>':('<b>'+esc(d.t)+'</b>'));
+  var b=[];
+  if(shotInfo&&shotInfo.date){ b.push(d.t); if(shotInfo.res) b.push(shotInfo.res+" 米"); }
+  else if(d.shotNote) b.push(d.shotNote);
+  var nz=(baseLayer&&baseLayer.options)?baseLayer.options.maxNativeZoom:null;
+  if(shotInfo&&shotInfo.maxZ) nz=shotInfo.maxZ;
+  if(nz&&map.getZoom()>nz+0.4) b.push("已超出原图清晰度");
+  return big+(b.length?('<small>'+esc(b.join(" · "))+'</small>'):"");
 }
 function renderTimeline(){
-  var yrs=$("#yrs"); 
-  if(S.baseId==="eox"){
-    yrs.innerHTML="";
-    EOX_YEARS.forEach(function(y){
-      var b=ce("button",(S.eoxYear===y?"on":""),y+"");
-      b.onclick=function(){ S.eoxYear=y; buildBase(); renderTimeline(); renderMarkers(); renderList(); };
-      yrs.appendChild(b);
-    });
+  var d=defOf(S.baseId), ym=yearMap();
+  /* 当前年份由底图状态派生，年份轴高亮永远和眼前的影像一致 */
+  if(d.eox) S.year=S.eoxYear;
+  else if(d.wayback) S.year=+((capOf(S.relIdx)||WB[S.relIdx][0]).slice(0,4));
+  else S.year=NOW_Y;
+  renderYears(ym); renderProvs(ym); renderCaps();
+  var live=isLive(d);
+  $("#sldRow").style.display=live?"none":"flex";
+  $("#onlyChg").style.display=d.wayback?"":"none";
+  $("#syncPts").style.display=live?"none":"";
+  if(d.eox){
     $("#rng").min=0; $("#rng").max=EOX_YEARS.length-1; $("#rng").value=EOX_YEARS.indexOf(S.eoxYear);
-    $("#whenTxt").innerHTML=((S.mode==="now")?"最新影像":('<b>'+S.eoxYear+'</b> 年度无云影像'))+'<small>整片区域 10 米一像素</small>';
-    $("#verInfo").textContent="9 年 · 10 米分辨率";
+    $("#whenTxt").innerHTML='<b>'+S.eoxYear+'</b> 年度无云影像<small>整片区域 10 米一像素</small>';
+    $("#verInfo").textContent=EOX_YEARS.length+" 年 · 10 米分辨率";
     $("#tlNote").textContent="Sentinel-2 年度无云合成，看整片村庄、田地、河道的形状变化最直观（10 米一像素，看不清单栋房子）。";
-    $("#onlyChg").style.display="none";
-  }else{
-    if(!yrs.dataset.wb){ yrs.dataset.wb="1"; }
-    var ym=yearMap(), span=yearSpan(ym);
-    var curD=capOf(S.relIdx), curY=(curD||WB[S.relIdx][0]).slice(0,4);
-    yrs.innerHTML="";
-    for(var y=span[0];y<=span[1];y++) yrs.appendChild(yearBtn(String(y),ym,curY));
+  }else if(d.wayback){
     var pos=relList.indexOf(S.relIdx); if(pos<0) pos=nearestPos(S.relIdx);
     $("#rng").min=0; $("#rng").max=Math.max(0,relList.length-1); $("#rng").value=pos;
-    var big=curD?('<b>'+curD+'</b> \u62cd\u7684'):('<b>'+WB[S.relIdx][0]+'</b> \u7684\u7248\u672c');
-    $("#whenTxt").innerHTML=((S.mode==="now")?"\u6700\u65b0\u5f71\u50cf":big)+wbSub();
+    var curD=capOf(S.relIdx);
+    $("#whenTxt").innerHTML=(curD?('<b>'+curD+'</b> 拍的'):('<b>'+WB[S.relIdx][0]+'</b> 的版本'))+wbSub();
     $("#verInfo").textContent=scanMsg||verLine(ym);
-    $("#onlyChg").style.display="";
-    $("#onlyChg").textContent=S.onlyChg?"\u53ea\u770b\u4e0d\u540c\u7684\u7167\u7247":"\u5168\u90e8 "+WB.length+" \u671f\u7248\u672c";
-    $("#tlNote").textContent=wbNote||"\u6863\u6848\u91cc\u4e00\u671f\u4e0d\u7b49\u4e8e\u4e00\u5f20\u65b0\u7167\u7247\uff1a\u540c\u4e00\u5f20\u5b9e\u62cd\u7167\u7247\u5e38\u88ab\u8fde\u7eed\u51e0\u5341\u671f\u6cbf\u7528\uff0c\u6240\u4ee5\u5e74\u4efd\u6309\u5b9e\u62cd\u65e5\u671f\u6392\u3002\u7f6e\u7070\u7684\u5e74\u4efd\u662f\u8fd9\u5757\u5730\u65b9\u5f53\u5e74\u6ca1\u62cd\u5230\u3002\u6362\u4e2a\u4f4d\u7f6e\u4f1a\u91cd\u65b0\u626b\u4e00\u904d\u3002";
+    $("#onlyChg").textContent=S.onlyChg?"只看不同的照片":"全部 "+WB.length+" 期版本";
+    $("#tlNote").textContent=wbNote||"档案里一期不等于一张新照片：同一张实拍照片常被连续几十期沿用，所以年份按实拍日期排。置灰的年份是这块地方当年没拍到。换个位置会重新扫一遍。";
+  }else{
+    $("#whenTxt").innerHTML=liveWhen(d);
+    $("#verInfo").textContent=d.n+" · "+d.sub;
+    $("#tlNote").textContent=(d.vec?"街道地图是画出来的，不是照片，所以没有拍摄时间。":"这是这家现在能给到的最新影像，各家拍摄时间不一样，所以切换厂商上面的日期会变。")+"想看更早的，点上面的年份。";
   }
   $("#onlyChg").classList.toggle("on",S.onlyChg);
   $("#syncPts").classList.toggle("on",S.syncPts);
@@ -1435,16 +1550,16 @@ function yearSpan(ym){
   if(!isFinite(lo)||!isFinite(hi)){ lo=2014; hi=(new Date()).getFullYear(); }
   return [lo,hi];
 }
-function yearBtn(y,ym,curY){
-  var has=(y in ym.m), cls=[];
-  if(y===curY) cls.push("on");
+function yearBtn(y,ym){
+  var av=yearProvs(y,ym), has=av.length>0, cls=[];
+  if(y===S.year) cls.push("on");
   if(!has) cls.push("off");
-  var b=ce("button",cls.join(" "),y);
-  b.onclick=function(){
-    if(has) return jumpToRel(ym.m[y]);
-    if(ym.cap) toast("\u8fd9\u5757\u5730\u65b9 "+y+" \u5e74\u6ca1\u62cd\u5230\u5f71\u50cf");
-    else toast(y+" \u5e74\u8fd8\u6ca1\u626b\u63cf\uff0c\u7a0d\u7b49\u4e00\u4e0b\u6216\u6362\u4e2a\u4f4d\u7f6e");
-  };
+  var nw="";
+  if(provAvail("wb",y,ym)){ var dt=capOf(ym.m[String(y)]); nw=dt?dt.slice(5):"存档"; }
+  else if(y===NOW_Y) nw="现在";
+  else if(has) nw=av[0].t;
+  var b=ce("button",cls.join(" "),y+'<span class="nw">'+esc(nw||"—")+'</span>');
+  b.onclick=function(){ setYear(y); };
   return b;
 }
 function jumpToRel(i){
@@ -1471,7 +1586,6 @@ function scanKeyNow(){
   return z+"/"+t[0]+"/"+t[1];
 }
 function scanHere(force){
-  if(S.baseId!=="wb") return;
   var key=scanKeyNow();
   if(!force&&scanState.key===key&&(scanState.busy||scanRec)) return;
   var changed=(scanState.key!==key);
@@ -1535,7 +1649,7 @@ function scanHere(force){
         wbNote="\u8fd9\u5757\u5730\u65b9 "+ds[0].slice(0,4)+"\u2013"+ds[ds.length-1].slice(0,4)+" \u4e00\u5171\u53ea\u62cd\u5230 "+ds.length+
           " \u5f20\u4e0d\u540c\u7684\u7167\u7247\uff0c\u6700\u65e9\u4e00\u5f20 "+ds[0]+"\u3002"+(best?("\u6700\u6e05\u7684 "+best+" \u7c73\u3002"):"")+
           "\u5e74\u4efd\u6309\u5b9e\u62cd\u65e5\u671f\u6392\uff0c\u7f6e\u7070\u7684\u5e74\u4efd\u5f53\u5e74\u6ca1\u62cd\u3002";
-        toast("\u8fd9\u5757\u5730\u65b9\u62cd\u5230 "+ds.length+" \u5f20\u4e0d\u540c\u7684\u7167\u7247\uff1a"+ds[0].slice(0,4)+"\u2013"+ds[ds.length-1].slice(0,4));
+        if(S.baseId==="wb") toast("\u8fd9\u5757\u5730\u65b9\u62cd\u5230 "+ds.length+" \u5f20\u4e0d\u540c\u7684\u7167\u7247\uff1a"+ds[0].slice(0,4)+"\u2013"+ds[ds.length-1].slice(0,4));
       }else if(ds.length===1){
         wbNote="\u8fd9\u5757\u5730\u65b9\u6574\u4e2a\u6863\u6848\u91cc\u53ea\u6709 "+ds[0]+" \u62cd\u7684\u4e00\u5f20\u7167\u7247\uff0c\u5176\u4f59\u671f\u6570\u90fd\u662f\u5b83\u7684\u526f\u672c\u3002";
       }
@@ -1545,7 +1659,8 @@ function scanHere(force){
   }
   for(var a=0;a<6;a++) nextA();
 }
-var scanSoon=debounce(function(){ if(S.mode==="past"&&S.baseId==="wb") scanHere(false); },900);
+/* 只在放大到街区级别时扫，世界视野下不打扰网络 */
+var scanSoon=debounce(function(){ if(map.getZoom()>=13) scanHere(false); },900);
 
 /* ================= list ================= */
 var TABS=[["place","\u5730\u70b9"],["route","\u8def\u7ebf"],["story","\u6545\u4e8b"],["person","\u4eba"],["period","\u65f6\u6bb5"]];
@@ -1705,15 +1820,16 @@ function metaOf(n,items){
   return m;
 }
 function sub(t){ return ce("div","subttl",esc(t)); }
+function rof(f){ f.classList.add("rof"); return f; }
 function roText(label,val,cls){
-  var f=fld(label), v=String(val==null?"":val).trim();
+  var f=rof(fld(label)), v=String(val==null?"":val).trim();
   var d=ce("div","ro"+(cls?(" "+cls):"")+(v?"":" em"));
   if(v) d.innerHTML=esc(v).replace(/\n/g,"<br>"); else d.textContent="\u2014";
   f.appendChild(d);
   return f;
 }
 function roChips(label,items){
-  var f=fld(label);
+  var f=rof(fld(label));
   if(!items.length){ f.appendChild(ce("div","ro em","\u2014")); return f; }
   var w=chipBox();
   items.forEach(function(it){
@@ -1724,7 +1840,7 @@ function roChips(label,items){
   return f;
 }
 function roRows(label,arr,mk,empty){
-  var f=fld(label);
+  var f=rof(fld(label));
   if(!arr.length){ f.appendChild(ce("div","ro em",empty||"\u2014")); return f; }
   arr.forEach(function(x){ f.appendChild(mk(x)); });
   return f;
@@ -1743,7 +1859,7 @@ function perItems(n){
   return out;
 }
 function segList(n){
-  var f=fld("\u5206\u6bb5\u4ea4\u901a\u65b9\u5f0f"), w=ce("div","seglist");
+  var f=rof(fld("\u5206\u6bb5\u4ea4\u901a\u65b9\u5f0f")), w=ce("div","seglist");
   var segs=normSegs(n.path||[],n.segs||[]), ms=segMeters(n.path||[]);
   if(!segs.length){ f.appendChild(ce("div","ro em","\u2014")); return f; }
   segs.forEach(function(sg,i){
@@ -1778,7 +1894,7 @@ function detailAnchor(n){
   bd.appendChild(roChips("\u6807\u7b7e",tagItems(n)));
   bd.appendChild(roChips("\u65f6\u95f4\u6bb5",perItems(n)));
   if(isRt){
-    var cf=fld("\u989c\u8272"), cw=ce("div","swatch"), cb=ce("button","on");
+    var cf=rof(fld("\u989c\u8272")), cw=ce("div","swatch st"), cb=ce("button","on");
     cb.style.background=routeColor(n); cb.style.cursor="default";
     cw.appendChild(cb); cf.appendChild(cw); bd.appendChild(cf);
     bd.appendChild(roText("\u8def\u7ebf","\u5171 "+((n.path||[]).length)+" \u4e2a\u70b9 \u00b7 "+routeKm(n)));
@@ -1806,7 +1922,7 @@ function detailAnchor(n){
     ft.appendChild(bp);
   }else{
     var b1=ce("button","btn","\u770b\u8fd9\u91cc\u7684\u8fc7\u53bb");
-    b1.onclick=function(){ flyTo(n); setMode("past"); setBase("wb"); toast("\u62d6\u5e95\u90e8\u6ed1\u5757\u56de\u5230\u8fc7\u53bb"); };
+    b1.onclick=function(){ flyTo(n); goWayback(); toast("\u5e95\u90e8\u6362\u4e2a\u5e74\u4efd\uff0c\u6216\u62d6\u6ed1\u5757\u7ee7\u7eed\u5f80\u524d"); };
     ft.appendChild(b1);
   }
   var b2=ce("button","btn p","\u7f16\u8f91"); b2.onclick=function(){ openEditor(n.kind,n.id); };
@@ -1819,7 +1935,7 @@ function detailStory(s){
   var bd=$("#shBody"); bd.innerHTML="";
   var a=byId(s.anchorId);
   bd.appendChild(roText("\u63cf\u8ff0",s.desc||"","big"));
-  var pf=fld("\u7167\u7247"+(s.photoCount?(" \u00b7 "+s.photoCount+" \u5f20"):""));
+  var pf=rof(fld("\u7167\u7247"+(s.photoCount?(" \u00b7 "+s.photoCount+" \u5f20"):"")));
   var ph=ce("div","ph-grid"); ph.id="detPh";
   if(s.photoCount) ph.innerHTML='<div class="empty" style="grid-column:1/-1;padding:14px">\u7167\u7247\u52a0\u8f7d\u4e2d\u2026</div>';
   else pf.appendChild(ce("div","ro em","\u2014"));
@@ -2703,7 +2819,7 @@ $("#jsonIn").onchange=function(e){
 
 /* ================= wiring ================= */
 $("#listBtn").onclick=function(){ var d=$("#drawer"); d.classList.toggle("hide"); $("#listBtn").classList.toggle("on",!d.classList.contains("hide")); };
-$("#lyrBtn").onclick=function(){ var p=$("#lyrPanel"); p.classList.toggle("open"); $("#lyrBtn").classList.toggle("on",p.classList.contains("open")); };
+$("#optBtn").onclick=function(){ var p=$("#optPanel"); p.classList.toggle("open"); $("#optBtn").classList.toggle("on",p.classList.contains("open")); };
 $("#syncChip").onclick=syncPanel;
 $("#shClose").onclick=function(){ if(ed) cancelEdit(); else closeSheet(); };
 $("#fab").onclick=function(){
@@ -2725,10 +2841,8 @@ $("#fabMenu").onclick=function(e){
 $("#drawUndo").onclick=drawUndo;
 $("#drawCancel").onclick=function(){ stopDraw(); };
 $("#drawDone").onclick=drawDone;
-$("#mNow").onclick=function(){ setMode("now"); };
-$("#mPast").onclick=function(){ setMode("past"); };
 $("#cmpBtn").onclick=function(){
-  if(S.mode!=="past"){ setMode("past"); }
+  if(!pastMode()){ toast("先在上面选一个有历史影像的年份"); return; }
   S.cmp=!S.cmp; syncCmp(); if(S.cmp) toast("拖动中间圆点：左边过去，右边现在");
 };
 $("#rng").oninput=function(){
@@ -2767,7 +2881,7 @@ document.addEventListener("keydown",function(e){
     if(e.key==="ArrowRight") $("#lbNext").click();
   }
   if(document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
-  if(S.mode==="past"){
+  if(pastMode()){
     if(e.key==="ArrowLeft"){ stopPlay(); step(-1); }
     if(e.key==="ArrowRight"){ stopPlay(); step(1); }
   }
@@ -2779,7 +2893,7 @@ map.on("moveend zoomend",function(){
 });
 map.on("mousedown",function(){ if($("#gs").classList.contains("on")) closeFind(); });
 
-function renderAll(){ renderLayerPanel(); renderTimeline(); renderMarkers(); renderList(); }
+function renderAll(){ renderOptPanel(); renderTimeline(); renderMarkers(); renderList(); }
 var didFit=false;
 function fitIfFirst(){
   if(didFit||!anchors().length) return;
@@ -2817,7 +2931,7 @@ if(S.secret) bootstrapCloud(); else setSync("local","本地");
 if(!anchors().length){
   setTimeout(function(){
     modal("\u8fd9\u662f\u4f60\u7684\u56de\u5fc6\u5730\u56fe",
-      '<div class="crd"><h4>\u600e\u4e48\u7528</h4><p>1\u3000\u53f3\u4e0b\u89d2\u300c\uff0b\u300d\uff1a\u6807\u4e00\u4e2a\u5730\u70b9\u3001\u753b\u4e00\u6761\u8def\u7ebf\u3001\u8bb0\u4e00\u4e2a\u6545\u4e8b\u3001\u6dfb\u4e00\u4e2a\u4eba\u3002<br>2\u3000\u5730\u70b9\u548c\u8def\u7ebf\u53ef\u4ee5\u6302\u591a\u4e2a\u6545\u4e8b\uff0c\u6545\u4e8b\u91cc\u5199\u65f6\u95f4\u3001\u4eba\u548c\u7167\u7247\u3002<br>3\u3000\u5e95\u90e8\u5207\u5230\u300c\u65f6\u5149\u673a\u300d\uff0c\u628a\u6ed1\u5757\u5f80\u5de6\u62d6 \u2014\u2014 2014 \u5e74\u4ee5\u6765\u7684\u536b\u661f\u5f71\u50cf\u4e00\u5e74\u5e74\u5012\u56de\u53bb\u3002</p></div>'+
+      '<div class="crd"><h4>\u600e\u4e48\u7528</h4><p>1\u3000\u53f3\u4e0b\u89d2\u300c\uff0b\u300d\uff1a\u6807\u4e00\u4e2a\u5730\u70b9\u3001\u753b\u4e00\u6761\u8def\u7ebf\u3001\u8bb0\u4e00\u4e2a\u6545\u4e8b\u3001\u6dfb\u4e00\u4e2a\u4eba\u3002<br>2\u3000\u5730\u70b9\u548c\u8def\u7ebf\u53ef\u4ee5\u6302\u591a\u4e2a\u6545\u4e8b\uff0c\u6545\u4e8b\u91cc\u5199\u65f6\u95f4\u3001\u4eba\u548c\u7167\u7247\u3002<br>3\u3000\u5e95\u90e8\u5148\u70b9\u4e00\u4e2a\u5e74\u4efd\uff0c\u4e0b\u9762\u5c31\u4f1a\u5217\u51fa\u8fd9\u4e00\u5e74\u54ea\u5bb6\u6709\u5f71\u50cf\uff0c\u70b9\u4e00\u4e0b\u5c31\u5207\u8fc7\u53bb\uff1b\u7f6e\u7070\u7684\u5e74\u4efd\u662f\u8fd9\u5757\u5730\u65b9\u5f53\u5e74\u6ca1\u62cd\u5230\u3002</p></div>'+
       '<div class="hint">想在手机和电脑上看同一份回忆，点左上角状态按钮解锁云同步。</div>',
       [{t:"知道了",p:true,f:closeModal}]);
   },700);
@@ -2828,6 +2942,8 @@ window.MM={S:S,map:map,byId:byId,WB:WB,LAYERS:LAYERS,
   rel:function(){ return relList; }, sub:shotSub,
   scan:function(){ return { rec:scanRec, state:scanState, cache:SCAN }; }, scanHere:scanHere,
   year:function(){ return yearMap(); }, span:function(){ return yearSpan(yearMap()); },
+  nowY:NOW_Y, avail:provAvail, provs:yearProvs, setYear:setYear, setProv:setProvider,
+  past:pastMode, when:function(){ return $("#whenTxt").textContent; },
   play:function(){ return play; }, playRoute:playRoute, stopPlay:stopRoutePlay,
   segs:normSegs, colors:ROUTE_COLORS, moves:MOVE,
   find:{ open:openFind, close:closeFind, go:gsGo, hits:function(){ return gsHits; }, url:photonURL }};
