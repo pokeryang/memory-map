@@ -164,6 +164,8 @@ button{cursor:pointer;border:0;background:none}
 .provs button.on{background:var(--accent);border-color:var(--accent);color:#1a1512;font-weight:600}
 .provs button.off{opacity:.32;cursor:not-allowed}
 .provs button.off:hover{color:var(--ink2);border-color:var(--line)}
+.provs .cl.gp{display:flex;align-items:center;flex:0 0 auto;font-size:10.5px;color:var(--ink3);
+  padding-left:8px;margin-left:2px;border-left:1px solid var(--line)}
 .caps{display:flex;align-items:center;gap:6px;overflow:auto;scrollbar-width:none;margin:-2px 0 4px}
 .caps::-webkit-scrollbar{display:none}
 .caps .cl{font-size:10.5px;color:var(--ink3);flex:0 0 auto}
@@ -438,7 +440,7 @@ button{cursor:pointer;border:0;background:none}
 
 <div class="panel tl" id="tl">
   <div class="tl-r1">
-    <span class="tl-lab" id="yrLab">选年份</span>
+    <span class="tl-lab" id="yrLab">拍摄年份</span>
     <button class="ib" id="cmpBtn" title="卷帘对比">◫</button>
     <div class="tl-when" id="whenTxt">最新影像</div>
   </div>
@@ -537,7 +539,7 @@ function defMove(meters){
 
 var ESRI_ATTR='影像 © Esri, Maxar, Earthstar Geographics';
 var LAYERS=[
-  {id:"esri",  g:"wgs", n:"现在 · 高清影像", t:"Esri 高清", sub:"Esri World Imagery",
+  {id:"esri",  g:"wgs", n:"高清影像 · 最新一版", t:"Esri 高清", sub:"Esri World Imagery",
    url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
    meta:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer",
    o:{maxZoom:21,maxNativeZoom:18,attribution:ESRI_ATTR}, sw:"#3f5a3a"},
@@ -545,7 +547,7 @@ var LAYERS=[
    url:"https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
    shotNote:"Google 不公开拍摄时间 · 原图最深 20 级，约 0.13 米一像素",
    o:{maxZoom:21,maxNativeZoom:20,subdomains:["0","1","2","3"],attribution:'影像 © Google'}, sw:"#2f4a34"},
-  {id:"wb",    g:"wgs", n:"时光机 · 历史影像", t:"时光机", sub:"Esri Wayback 2014–2026", wayback:true,
+  {id:"wb",    g:"wgs", n:"时光机 · 历史影像", t:"时光机", sub:"Esri Wayback 存档，版本日期不等于拍摄日期", wayback:true,
    o:{maxZoom:21,maxNativeZoom:18,subdomains:["a","b"],attribution:ESRI_ATTR+' · Wayback'}, sw:"#5b4a35"},
   {id:"bing",  g:"wgs", n:"另一家 · 微软影像", t:"Bing", sub:"Bing 卫星，拍摄时间常和 Esri 不同", bing:true,
    url:"https://ecn.t{s}.tiles.virtualearth.net/tiles/a{q}.jpeg?g=1",
@@ -625,7 +627,7 @@ function ll2tile(lat,lng,z){
 /* ================= state ================= */
 /* 登录态必须同步读出来：loadLocal() 依赖它决定读哪个账号的本地库 */
 var _auth0=(function(){ try{ return JSON.parse(localStorage.getItem(LS_AUTH)||"null")||{}; }catch(e){ return {}; } })();
-var S={ nodes:[], baseId:"esri", labels:false, year:(new Date()).getFullYear(), relIdx:WB.length-1,
+var S={ nodes:[], baseId:"esri", labels:false, year:null, relIdx:WB.length-1,
         cmp:false, cmpPct:50, onlyChg:true, syncPts:false, sharp:false,
         tab:"place", tags:[], per:[], q:"", sel:null,
         token:_auth0.token||"", uid:_auth0.uid||"", phone:_auth0.phone||"",
@@ -1321,6 +1323,7 @@ function probeShot(){
       if(baseLayer.options.maxNativeZoom!==mz){ baseLayer.options.maxNativeZoom=mz; baseLayer.redraw(); }
     }
     renderTimeline();
+    resnapYear();   /* 晚到的真实拍摄日期可能把用户点的那一年冲掉，得重新归位 */
     if(!shotInfo&&(shotRetry[key]||0)<2){
       shotRetry[key]=(shotRetry[key]||0)+1;
       setTimeout(function(){ if(shotKey===key) probeShot(); },1500);
@@ -1358,13 +1361,32 @@ var relList=WB.map(function(_,i){ return i; });  /* indices into WB currently sh
 var playTimer=null, tmCache={}, wbNote=null;
 /* ---- 年份优先：先选一年，再挑这一年有影像的厂商 ---- */
 var NOW_Y=(new Date()).getFullYear();
-var LIVE_PREF=["esri","gsat","bing","amapst","street","amap"];
+var wantYear=null;   /* 用户手点的年份；扫描结果晚到时按它重新归位 */
 function isLive(d){ return !d.wayback&&!d.eox; }
+/* 参与年份轴的厂商：能拿到真实拍摄日期的才算（时光机/年度无云/Esri）。
+   其余实时源不公开拍摄时间，归「不按年份」组，不冒充任何年份。 */
+function datedProv(d){ return !!(d.wayback||d.eox||d.id==="esri"); }
+/* Esri 在当前位置的实拍信息：优先扫描缓存，其次当前正看着 esri 时的实时探测 */
+function esriShot(){
+  if(scanRec&&scanRec.esri&&scanRec.esri.date) return scanRec.esri;
+  if(S.baseId==="esri"&&shotInfo&&shotInfo.date) return shotInfo;
+  return null;
+}
+function esriYearAt(){ var s=esriShot(); return s?+String(s.date).slice(0,4):null; }
 function provAvail(id,y,ym){
+  if(y==null) return false;
   var d=defOf(id); y=+y;
-  if(d.wayback){ ym=ym||yearMap(); return (String(y) in ym.m); }
+  if(d.wayback){ ym=ym||yearMap(); return ym.cap&&(String(y) in ym.m); }
   if(d.eox) return EOX_YEARS.indexOf(y)>=0;
-  return y===NOW_Y;                       /* 各家实时底图只代表"现在" */
+  if(d.id==="esri"){ var ey=esriYearAt(); return ey!=null&&ey===y; }
+  return false;
+}
+function provYears(id,ym){
+  var d=defOf(id), ys=[];
+  if(d.wayback){ ym=ym||yearMap(); ys=ym.cap?Object.keys(ym.m).map(Number):[]; }
+  else if(d.eox) ys=EOX_YEARS.slice();
+  else if(d.id==="esri"){ var ey=esriYearAt(); if(ey!=null) ys=[ey]; }
+  return ys.sort(function(a,b){ return a-b; });
 }
 function yearProvs(y,ym){ ym=ym||yearMap(); return LAYERS.filter(function(d){ return provAvail(d.id,y,ym); }); }
 function nearEox(y){
@@ -1372,8 +1394,9 @@ function nearEox(y){
   EOX_YEARS.forEach(function(x){ if(Math.abs(x-y)<Math.abs(best-y)) best=x; });
   return best;
 }
-function setYear(y,prefer){
+function setYear(y,prefer,keep){
   y=+y;
+  if(!keep) resnapN=0;   /* 用户自己点的一年：重试计数从头算 */
   var ym=yearMap(), av=yearProvs(y,ym);
   if(!av.length){
     if(ym.cap) toast("这块地方 "+y+" 年没拍到影像");
@@ -1382,23 +1405,37 @@ function setYear(y,prefer){
   }
   var want=prefer||(provAvail(S.baseId,y,ym)?S.baseId:null);
   if(!want){
-    var order=(y===NOW_Y)?LIVE_PREF.concat(["wb","eox"]):["wb","eox"];
+    var order=["esri","wb","eox"];
     for(var i=0;i<order.length;i++){ if(provAvail(order[i],y,ym)){ want=order[i]; break; } }
     if(!want) want=av[0].id;
   }
   S.year=y;
+  wantYear=y;   /* 记住用户手点的这一年：扫描结果回来后按它重新归位 */
   useProv(want,ym);
 }
 function setProvider(id){
-  var ym=yearMap();
-  if(!provAvail(id,S.year,ym)){ toast(defOf(id).t+"没有 "+S.year+" 年的影像"); return; }
+  var ym=yearMap(), d=defOf(id);
+  if(!datedProv(d)){ S.year=null; wantYear=null; useProv(id,ym); return; }  /* 不按年份的源直接切 */
+  if(S.year!=null&&provAvail(id,S.year,ym)){ useProv(id,ym); return; }
+  if(S.year!=null){ toast(d.t+"没有 "+S.year+" 年的影像"); return; }
+  /* 还没选年份（正看着不按年份的源）：跳到这家最近的一年 */
+  var ys=provYears(id,ym);
+  if(!ys.length){
+    if(d.wayback){
+      if(map.getZoom()<13){ toast("先放大到街区，再查这里拍到过哪些年"); return; }
+      toast("正在查这里拍到过哪些年…"); scanHere(true); return;
+    }
+    toast(id==="esri"?"还没探到 Esri 这里的拍摄时间，放大一点再试":d.t+"在这里还没探到影像");
+    return;
+  }
+  S.year=ys[ys.length-1];
   useProv(id,ym);
 }
 function useProv(id,ym){
   ym=ym||yearMap();
   var d=defOf(id);
-  if(d.eox) S.eoxYear=(EOX_YEARS.indexOf(S.year)>=0)?S.year:nearEox(S.year);
-  if(d.wayback){ var i=ym.m[String(S.year)]; if(i!=null) S.relIdx=i; }
+  if(d.eox) S.eoxYear=(EOX_YEARS.indexOf(S.year)>=0)?S.year:nearEox(S.year==null?NOW_Y:S.year);
+  if(d.wayback&&S.year!=null){ var i=ym.m[String(S.year)]; if(i!=null) S.relIdx=i; }
   if(id!==S.baseId){
     stopPlay();
     if(isLive(d)) S.cmp=false;
@@ -1408,13 +1445,17 @@ function useProv(id,ym){
 /* 跳到有历史影像的最近一年（详情页「看这里的过去」） */
 function goWayback(){
   var ym=yearMap(), ys=Object.keys(ym.m).map(Number).sort(function(a,b){ return a-b; });
-  ys=ys.filter(function(y){ return y!==NOW_Y; });
   if(!ys.length) return setProvider("wb");
-  setYear(ys[ys.length-1],"wb");
+  /* 「看这里的过去」= 比眼前这年更早的最近一年；没有更早的就用最新的存档年 */
+  var older=ys.filter(function(y){ return S.year==null||y<S.year; });
+  setYear((older.length?older[older.length-1]:ys[ys.length-1]),"wb");
 }
 function renderYears(ym){
   var yrs=$("#yrs"), span=yearSpan(ym);
-  var lo=Math.min(span[0],EOX_YEARS[0]), hi=Math.max(span[1],NOW_Y);
+  /* 上界只到「真的有影像」的最新一年：Esri 实拍年、时光机存档年、无云年，别默认到今年 */
+  var hi=Math.max(span[1],EOX_YEARS[EOX_YEARS.length-1]);
+  var ey=esriYearAt(); if(ey!=null&&ey>hi) hi=ey;
+  var lo=Math.min(span[0],EOX_YEARS[0]);
   yrs.innerHTML="";
   for(var y=lo;y<=hi;y++) yrs.appendChild(yearBtn(y,ym));
   var on=yrs.querySelector("button.on");
@@ -1422,17 +1463,34 @@ function renderYears(ym){
 }
 function renderProvs(ym){
   var w=$("#provs"); w.innerHTML="";
-  var av=[], no=[];
-  LAYERS.forEach(function(d){ (provAvail(d.id,S.year,ym)?av:no).push(d); });
-  av.concat(no).forEach(function(d){
-    var ok=(no.indexOf(d)<0);
+  var av=[], no=[], free=[];
+  LAYERS.forEach(function(d){
+    if(!datedProv(d)){ free.push(d); return; }
+    /* 选了年份就按当年有没有影像；没选年份（正看着不按年份的源）时，
+       只要这家有已知的年份就能点，点了跳到它最近的一年；时光机可以现场扫 */
+    var ok=(S.year!=null)?provAvail(d.id,S.year,ym)
+                         :(provYears(d.id,ym).length>0||!!d.wayback);
+    /* 正看着的这家永远不置灰：极少数地方探不到拍摄日期，不能让当前图层自己变成不可点 */
+    if(S.baseId===d.id) ok=true;
+    (ok?av:no).push(d);
+  });
+  function chip(d,ok){
     var b=ce("button",(S.baseId===d.id?"on":"")+(ok?"":" off"),
       '<span class="sw" style="background:'+d.sw+'"></span><span>'+esc(d.t)+'</span>');
     b.title=d.n+" · "+d.sub;
     b.setAttribute("data-p",d.id);
-    b.onclick=function(){ if(ok) setProvider(d.id); else toast(d.t+"没有 "+S.year+" 年的影像"); };
+    b.onclick=function(){
+      if(ok) setProvider(d.id);
+      else toast(d.t+(S.year!=null?("没有 "+S.year+" 年的影像"):"在这里还没探到影像"));
+    };
     w.appendChild(b);
-  });
+  }
+  av.forEach(function(d){ chip(d,true); });
+  no.forEach(function(d){ chip(d,false); });
+  if(free.length){
+    w.appendChild(ce("span","cl gp","不按年份："));
+    free.forEach(function(d){ chip(d,true); });
+  }
 }
 /* 同一年拍到过好几张：直接列出来点 */
 function renderCaps(){
@@ -1457,13 +1515,15 @@ function renderCaps(){
 }
 /* 实时厂商的时间说明：有真实实拍日期就报日期，没有就老实说不公开 */
 function liveWhen(d){
-  var big=(shotInfo&&shotInfo.date)?('<b>'+shotInfo.date+'</b> 拍的')
+  /* 实时探测还没回来时，用扫描时缓存的 Esri 实拍信息顶上，别只报个厂商名 */
+  var si=(shotInfo&&shotInfo.date)?shotInfo:((d.id==="esri")?esriShot():null);
+  var big=(si&&si.date)?('<b>'+si.date+'</b> 拍的')
         :(d.vec?'<b>街道地图</b>':('<b>'+esc(d.t)+'</b>'));
   var b=[];
-  if(shotInfo&&shotInfo.date){ b.push(d.t); if(shotInfo.res) b.push(shotInfo.res+" 米"); }
+  if(si&&si.date){ b.push(d.t); if(si.res) b.push(si.res+" 米"); }
   else if(d.shotNote) b.push(d.shotNote);
   var nz=(baseLayer&&baseLayer.options)?baseLayer.options.maxNativeZoom:null;
-  if(shotInfo&&shotInfo.maxZ) nz=shotInfo.maxZ;
+  if(si&&si.maxZ) nz=si.maxZ;
   if(nz&&map.getZoom()>nz+0.4) b.push("已超出原图清晰度");
   return big+(b.length?('<small>'+esc(b.join(" · "))+'</small>'):"");
 }
@@ -1472,7 +1532,8 @@ function renderTimeline(){
   /* 当前年份由底图状态派生，年份轴高亮永远和眼前的影像一致 */
   if(d.eox) S.year=S.eoxYear;
   else if(d.wayback) S.year=+((capOf(S.relIdx)||WB[S.relIdx][0]).slice(0,4));
-  else S.year=NOW_Y;
+  else if(d.id==="esri") S.year=esriYearAt();      /* 按 Esri 真实拍摄年份归位，探不到就不高亮 */
+  else S.year=null;                                 /* 不公开拍摄时间的源不占任何年份 */
   renderYears(ym); renderProvs(ym); renderCaps();
   var live=isLive(d);
   $("#sldRow").style.display=live?"none":"flex";
@@ -1494,7 +1555,7 @@ function renderTimeline(){
   }else{
     $("#whenTxt").innerHTML=liveWhen(d);
     $("#verInfo").textContent=d.n+" · "+d.sub;
-    $("#tlNote").textContent=(d.vec?"街道地图是画出来的，不是照片，所以没有拍摄时间。":"这是这家现在能给到的最新影像，各家拍摄时间不一样，所以切换厂商上面的日期会变。")+"想看更早的，点上面的年份。";
+    $("#tlNote").textContent=(d.vec?"街道地图是画出来的，不是照片，所以没有拍摄时间。":(d.id==="esri"?"Esri 会按这块地方的真实拍摄日期落在上面对应的年份上。":"这家不公开拍摄时间，所以不放进年份轴，归在「不按年份」里。"))+"年份轴上置灰的年份是这块地方当年没拍到，点不了——今年也一样，最新影像往往是前几年拍的。";
   }
   $("#onlyChg").classList.toggle("on",S.onlyChg);
   $("#syncPts").classList.toggle("on",S.syncPts);
@@ -1519,7 +1580,10 @@ function nearestPos(idx){
 }
 function gotoPos(pos){
   pos=clamp(pos,0,relList.length-1);
-  S.relIdx=relList[pos]; refreshWB();
+  S.relIdx=relList[pos];
+  /* 手动拖版本滑块就是自己挑，之后扫描回来别再把他拽回原来点的那一年 */
+  var dt=capOf(S.relIdx); wantYear=dt?+dt.slice(0,4):null;
+  refreshWB();
 }
 function refreshWB(){ buildBase(); renderTimeline(); renderMarkers(); renderList(); }
 function stopPlay(){ if(playTimer){ clearInterval(playTimer); playTimer=null; $("#playB").textContent="▶"; } }
@@ -1558,6 +1622,52 @@ function applyScan(rec){
     if(!WBSHOT[i]) WBSHOT[i]={ date:d[k], res:r[k]||null };
   });
   rebuildRel();
+  resnapYear();
+}
+/* 拍摄日期是异步才知道的（整片扫描 + 每个版本单独探元数据），结果回来时可能把
+   用户手点的那一年冲掉。这里按 wantYear 重新归位，否则会出现「点了 2021，
+   实际在看 2018」这种静默错位。resnapN 封顶，避免异步回环转不停。 */
+var resnapN=0;
+function resnapYear(){
+  if(wantYear==null) return;
+  var ym=yearMap();
+  /* 当前厂商还有这一年：只在眼前这期确实不属于那一年时才跳版本。
+     同一年里用户自己挑了第二次拍摄（capRow / 滑块），不能把他拽回第一期。 */
+  if(provAvail(S.baseId,wantYear,ym)){
+    if(S.baseId==="wb"){
+      var cur=capOf(S.relIdx), curY=cur?+cur.slice(0,4):null;
+      if(curY!==wantYear){
+        var j=ym.m[String(wantYear)];
+        if(j!=null&&j!==S.relIdx){ S.relIdx=j; refreshWB(); return; }
+      }
+    }
+    if(S.year!==wantYear){ S.year=wantYear; renderTimeline(); }
+    return;
+  }
+  if(resnapN>=4) return;
+  if(S.baseId==="wb"&&!ym.cap) return;   /* 还没扫出来，等下一轮 */
+  /* 这家没了，换一家仍拍到过这一年的（清晰度优先：Esri > 时光机 > 年度无云） */
+  var av=yearProvs(wantYear,ym);
+  if(av.length){
+    var pick=null, order=["esri","wb","eox"];
+    for(var k=0;k<order.length;k++){ if(provAvail(order[k],wantYear,ym)){ pick=order[k]; break; } }
+    if(!pick) pick=av[0].id;
+    if(pick!==S.baseId) toast(defOf(S.baseId).t+"这版其实不是 "+wantYear+" 年拍的，给你换成"+defOf(pick).t);
+    resnapN++;
+    setYear(wantYear,pick,true);
+    return;
+  }
+  /* 谁都没拍到这一年：退到最近的一年，并且明说一句，不闷着换 */
+  var ys=[];
+  ["wb","esri","eox"].forEach(function(id){
+    provYears(id,ym).forEach(function(y){ if(ys.indexOf(y)<0) ys.push(y); });
+  });
+  if(!ys.length) return;
+  var near=ys[0], best=1e9;
+  ys.forEach(function(y){ var dd=Math.abs(y-wantYear); if(dd<best){ best=dd; near=y; } });
+  toast("这块地方 "+wantYear+" 年没拍到，给你看的是 "+near+" 年的");
+  resnapN++;
+  setYear(near,null,true);
 }
 function rebuildRel(){
   var all=WB.map(function(_,i){ return i; });
@@ -1588,20 +1698,25 @@ function yearMap(){
 }
 function yearSpan(ym){
   var lo=1e9, hi=-1e9;
-  Object.keys(ym.m).forEach(function(y){ y=+y; if(y<lo)lo=y; if(y>hi)hi=y; });
-  WB.forEach(function(r){ var y=+r[0].slice(0,4); if(y<lo)lo=y; if(y>hi)hi=y; });
-  if(!isFinite(lo)||!isFinite(hi)){ lo=2014; hi=(new Date()).getFullYear(); }
+  /* 只用「真的拍到过」的年份定范围：存档实拍年（扫过才算）、无云年、Esri 实拍年 */
+  if(ym.cap) Object.keys(ym.m).forEach(function(y){ y=+y; if(y<lo)lo=y; if(y>hi)hi=y; });
+  var ey=esriYearAt(); if(ey!=null){ if(ey<lo)lo=ey; if(ey>hi)hi=ey; }
+  if(EOX_YEARS[0]<lo) lo=EOX_YEARS[0];
+  if(EOX_YEARS[EOX_YEARS.length-1]>hi) hi=EOX_YEARS[EOX_YEARS.length-1];
+  if(!isFinite(lo)||!isFinite(hi)){ lo=EOX_YEARS[0]; hi=EOX_YEARS[EOX_YEARS.length-1]; }
+  /* 轴一直画到今年：今年没人拍到就置灰摆在那儿，让人一眼看出「最新影像不是今年拍的」 */
+  if(NOW_Y>hi) hi=NOW_Y;
   return [lo,hi];
 }
 function yearBtn(y,ym){
   var av=yearProvs(y,ym), has=av.length>0, cls=[];
-  if(y===S.year) cls.push("on");
+  if(S.year!=null&&y===S.year) cls.push("on");
   if(!has) cls.push("off");
   var nw="";
-  /* 今年一律写「现在」：还没扫过这块地方时 yearMap 会退回全量存档列表，别让今年也顶着「存档」 */
-  if(y===NOW_Y) nw="现在";
-  else if(provAvail("wb",y,ym)){ var dt=capOf(ym.m[String(y)]); nw=dt?dt.slice(5):"存档"; }
+  if(provAvail("wb",y,ym)){ var dt=capOf(ym.m[String(y)]); nw=dt?dt.slice(5):"存档"; }
+  else if(esriYearAt()===y){ var es=esriShot(); nw=es?es.date.slice(5):"Esri"; }
   else if(has) nw=av[0].t;
+  else if(y===NOW_Y) nw="\u8fd8\u6ca1\u62cd";   /* 今年谁都还没拍到，明说一句 */
   var b=ce("button",cls.join(" "),y+'<span class="nw">'+esc(nw||"—")+'</span>');
   b.onclick=function(){ setYear(y); };
   return b;
@@ -1684,7 +1799,6 @@ function scanHere(force){
       if(my!==scanState.seq) return;
       scanState.busy=false; clearVer();
       var rec={ ts:Date.now(), keep:keep, d:dmap, r:rmap };
-      SCAN[key]=rec; scanSave();
       var ds=[], best=null;
       Object.keys(dmap).forEach(function(k){ if(ds.indexOf(dmap[k])<0) ds.push(dmap[k]); });
       ds.sort();
@@ -1697,7 +1811,13 @@ function scanHere(force){
       }else if(ds.length===1){
         wbNote="\u8fd9\u5757\u5730\u65b9\u6574\u4e2a\u6863\u6848\u91cc\u53ea\u6709 "+ds[0]+" \u62cd\u7684\u4e00\u5f20\u7167\u7247\uff0c\u5176\u4f59\u671f\u6570\u90fd\u662f\u5b83\u7684\u526f\u672c\u3002";
       }
-      applyScan(rec); probeShot();
+      /* Esri 也要落到年份轴上：单独探一次它在这里的真实拍摄日期 */
+      metaQuery(LAYERS[0].meta,c.lat,c.lng).then(function(m){
+        if(my!==scanState.seq) return;
+        if(m&&m.date) rec.esri={ date:m.date, res:m.res||null, maxZ:m.maxZ||null };
+        SCAN[key]=rec; scanSave();
+        applyScan(rec); probeShot();
+      });
     }
     for(var w2=0;w2<3;w2++) nextB();
   }
@@ -3510,7 +3630,7 @@ if(!anchors().length){
   setTimeout(function(){
     if($("#modal").classList.contains("on")) return;   /* 别盖掉这会儿正开着的弹窗 */
     modal("\u8fd9\u662f\u4f60\u7684\u56de\u5fc6\u5730\u56fe",
-      '<div class="crd"><h4>\u600e\u4e48\u7528</h4><p>1\u3000\u53f3\u4e0b\u89d2\u300c\uff0b\u300d\uff1a\u6807\u4e00\u4e2a\u5730\u70b9\u3001\u753b\u4e00\u6761\u8def\u7ebf\u3001\u8bb0\u4e00\u4e2a\u6545\u4e8b\u3001\u6dfb\u4e00\u4e2a\u4eba\u3002<br>2\u3000\u5730\u70b9\u548c\u8def\u7ebf\u53ef\u4ee5\u6302\u591a\u4e2a\u6545\u4e8b\uff0c\u6545\u4e8b\u91cc\u5199\u65f6\u95f4\u3001\u4eba\u548c\u7167\u7247\u3002<br>3\u3000\u5e95\u90e8\u5148\u70b9\u4e00\u4e2a\u5e74\u4efd\uff0c\u4e0b\u9762\u5c31\u4f1a\u5217\u51fa\u8fd9\u4e00\u5e74\u54ea\u5bb6\u6709\u5f71\u50cf\uff0c\u70b9\u4e00\u4e0b\u5c31\u5207\u8fc7\u53bb\uff1b\u7f6e\u7070\u7684\u5e74\u4efd\u662f\u8fd9\u5757\u5730\u65b9\u5f53\u5e74\u6ca1\u62cd\u5230\u3002</p></div>'+
+      '<div class="crd"><h4>\u600e\u4e48\u7528</h4><p>1\u3000\u53f3\u4e0b\u89d2\u300c\uff0b\u300d\uff1a\u6807\u4e00\u4e2a\u5730\u70b9\u3001\u753b\u4e00\u6761\u8def\u7ebf\u3001\u8bb0\u4e00\u4e2a\u6545\u4e8b\u3001\u6dfb\u4e00\u4e2a\u4eba\u3002<br>2\u3000\u5730\u70b9\u548c\u8def\u7ebf\u53ef\u4ee5\u6302\u591a\u4e2a\u6545\u4e8b\uff0c\u6545\u4e8b\u91cc\u5199\u65f6\u95f4\u3001\u4eba\u548c\u7167\u7247\u3002<br>3\u3000\u5e95\u90e8\u5148\u70b9\u4e00\u4e2a\u5e74\u4efd\uff0c\u4e0b\u9762\u4f1a\u5217\u51fa\u8fd9\u4e00\u5e74\u771f\u7684\u62cd\u5230\u8fc7\u5f71\u50cf\u7684\u5382\u5546\uff0c\u70b9\u4e00\u4e0b\u5c31\u5207\u8fc7\u53bb\uff1b\u7f6e\u7070\u7684\u5e74\u4efd\u662f\u5f53\u5e74\u6ca1\u62cd\u5230\uff0c\u70b9\u4e0d\u4e86\u3002\u4e0d\u516c\u5f00\u62cd\u6444\u65f6\u95f4\u7684\u5382\u5546\uff08Google\u3001Bing\u3001\u9ad8\u5fb7\u7b49\uff09\u653e\u5728\u300c\u4e0d\u6309\u5e74\u4efd\u300d\u91cc\u3002</p></div>'+
       '<div class="hint">想在手机和电脑上看同一份回忆，点左上角状态按钮，用手机号登录。</div>',
       [{t:"知道了",p:true,f:closeModal}]);
   },700);
@@ -3521,7 +3641,12 @@ window.MM={S:S,map:map,byId:byId,WB:WB,LAYERS:LAYERS,
   rel:function(){ return relList; }, sub:shotSub,
   scan:function(){ return { rec:scanRec, state:scanState, cache:SCAN }; }, scanHere:scanHere,
   year:function(){ return yearMap(); }, span:function(){ return yearSpan(yearMap()); },
-  nowY:NOW_Y, avail:provAvail, provs:yearProvs, setYear:setYear, setProv:setProvider,
+  avail:provAvail, provs:yearProvs, provYears:provYears, dated:datedProv,
+  esriYear:esriYearAt, esriShot:esriShot, setYear:setYear, setProv:setProvider,
+  wantYear:function(){ return wantYear; }, applyScan:applyScan,
+  wbshot:function(){ return WBSHOT; }, resnap:resnapYear,
+  /* 断网探针用：复刻 probeShot 拿到真实元数据后的收尾，模拟「晚到的拍摄日期」 */
+  lateMeta:function(i,date,res){ WBSHOT[i]={ date:date, res:res||null }; renderTimeline(); resnapYear(); },
   past:pastMode, when:function(){ return $("#whenTxt").textContent; },
   play:function(){ return play; }, playRoute:playRoute, stopPlay:stopRoutePlay,
   segs:normSegs, colors:ROUTE_COLORS, moves:MOVE,
